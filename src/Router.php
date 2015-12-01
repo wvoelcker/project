@@ -24,7 +24,11 @@ use Phroute\Phroute\Exception\HttpRouteNotFoundException;
 abstract class Router {
 	protected $projectRoot, $routeCollector, $controllersDirectory = "controllers";
 
-	protected function runController($controllerPath, $urlParams) {
+	// These variables are available to controllers via $this
+	protected $urlParams = array(), $lastException = null;
+
+	protected function runController($controllerPath, $urlParams = array()) {
+		$this->urlParams = $urlParams;
 		require $this->projectRoot."/".$this->controllersDirectory."/".$controllerPath.".php";
 	}
 
@@ -44,16 +48,13 @@ abstract class Router {
 			return $dispatcher->dispatch($method, parse_url($urlPath, PHP_URL_PATH));
 
 		} catch (HttpRouteNotFoundException $e) {
-
-			// TODO:WV:20151201:Pass in $e
+			$this->lastException = $e;
 			$this->runController("404");
 
 		} catch (Exception $e) {
-
-			// TODO:WV:20151201:Pass in $e
+			$this->lastException = $e;
 			$this->runController("500");
 		}
-
 	}
 
 	protected function getRoutingData() {
