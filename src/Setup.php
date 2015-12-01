@@ -14,6 +14,8 @@ abstract class Setup {
 	}
 
 	private static function ensureProjectDirectoryPresent($event, $relativeDirectoryPath) {
+		$event->getIO()->write("Making sure the '".basename($relativeDirectoryPath)."' directory is present");
+
 		$projectRoot = dirname($event->getComposer()->getConfig()->get('vendor-dir'));
 		$fullDirectoryPath = $projectRoot."/".$relativeDirectoryPath;
 		
