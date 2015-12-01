@@ -4,5 +4,10 @@
     "require": {
         "mustache/mustache": "^2.9",
         "phroute/phroute": "^2.1"
-    }
+    },
+    "autoload": {
+        "psr-4": {
+            "WillV\\Project\\": "src"
+		 }
+	}
 }
