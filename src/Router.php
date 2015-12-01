@@ -33,7 +33,8 @@ abstract class Router {
 	}
 
 	static public function create($projectRoot, \Mustache_Engine $mustache) {
-		$router = new ProjectRouter;
+		$className = get_called_class();
+		$router = new $className;
 		$router->projectRoot = $projectRoot;
 		$router->routeCollector = new RouteCollector();
 		$router->mustache = $mustache;
