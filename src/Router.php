@@ -32,7 +32,7 @@ abstract class Router {
 		require $this->projectRoot."/".$this->controllersDirectory."/".$controllerPath.".php";
 	}
 
-	static public function create($projectRoot, Mustache_Engine $mustache) {
+	static public function create($projectRoot, \Mustache_Engine $mustache) {
 		$router = new ProjectRouter;
 		$router->projectRoot = $projectRoot;
 		$router->routeCollector = new RouteCollector();
