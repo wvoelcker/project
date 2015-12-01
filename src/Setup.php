@@ -7,7 +7,7 @@ use Composer\Script\Event;
  * appropriate directories etc on update and install
  *
  */
-abstract class Setup {
+class Setup {
 
 	private static function getProjectRoot($event) {
 		$projectRoot = dirname($event->getComposer()->getConfig()->get('vendor-dir'));
