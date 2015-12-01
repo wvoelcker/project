@@ -9,16 +9,5 @@
         "psr-4": {
             "WillV\\Project\\": "src"
 		 }
-	},
-	"scripts": {
-		"post-install-cmd": [
-			"WillV\\Project\\Setup::ensureControllersDirectoryPresent",
-			"WillV\\Project\\Setup::ensureTemplatesDirectoryPresent"
-		],
-		"post-update-cmd": [
-			"WillV\\Project\\Setup::ensureControllersDirectoryPresent",
-			"WillV\\Project\\Setup::ensureTemplatesDirectoryPresent"
-		]
 	}
-
 }
