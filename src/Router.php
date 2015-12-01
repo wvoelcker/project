@@ -24,18 +24,19 @@ use Phroute\Phroute\Exception\HttpRouteNotFoundException;
 abstract class Router {
 	protected $projectRoot, $routeCollector, $controllersDirectory = "controllers";
 
-	// These variables are available to controllers via $this
-	protected $urlParams = array(), $lastException = null;
+	// These variables are here to be available to controllers via $this
+	protected $urlParams = array(), $mustache, $lastException = null;
 
 	protected function runController($controllerPath, $urlParams = array()) {
 		$this->urlParams = $urlParams;
 		require $this->projectRoot."/".$this->controllersDirectory."/".$controllerPath.".php";
 	}
 
-	static public function create($projectRoot) {
+	static public function create($projectRoot, Mustache_Engine $mustache) {
 		$router = new ProjectRouter;
 		$router->projectRoot = $projectRoot;
 		$router->routeCollector = new RouteCollector();
+		$router->mustache = $mustache;
 		$router->addRoutes();
 
 		return $router;
