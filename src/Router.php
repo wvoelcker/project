@@ -35,7 +35,7 @@ abstract class Router {
 	}
 
 	public function go($method, $urlPath) {
-		$dispatcher = new Dispatcher($this->getRoutingData());
+		$dispatcher = $this->getDispatcher($this->getRoutingData());
 
 		try {
 			return $dispatcher->dispatch($method, parse_url($urlPath, PHP_URL_PATH));
@@ -46,6 +46,15 @@ abstract class Router {
 		} catch (Exception $e) {
 			$this->runController("500", array(), $e);
 		}
+	}
+
+	/**
+	 * Abstracted out into its own function, to allow overriding this
+	 * for dependency injection purposes (e.g. when unit testing)
+	 * 
+	 */
+	protected function getDispatcher($routingData) {
+		return new Dispatcher($routingData);
 	}
 
 	protected function runController($controllerPath, $urlParams = array(), $lastException = null) {
