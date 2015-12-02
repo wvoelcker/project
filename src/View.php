@@ -26,6 +26,10 @@ class View {
 			throw new Exception("Can't add to this template variable - is already initiated to something other than a sequentially indexed array");
 		}
 
+		if (!isset($this->templateData[$key])) {
+			$this->templateData[$key] = array();
+		}
+
 		$this->templateData[$key][] = $value;
 
 		return $this;
