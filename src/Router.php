@@ -24,14 +24,6 @@ use Phroute\Phroute\Exception\HttpRouteNotFoundException;
 abstract class Router {
 	protected $projectRoot, $routeCollector, $controllersDirectory = "controllers";
 
-	// These variables are here to be available to controllers via $this
-	protected $urlParams = array(), $mustache, $lastException = null;
-
-	protected function runController($controllerPath, $urlParams = array()) {
-		$this->urlParams = $urlParams;
-		require $this->projectRoot."/".$this->controllersDirectory."/".$controllerPath.".php";
-	}
-
 	static public function create($projectRoot) {
 		$className = get_called_class();
 		$router = new $className;
@@ -49,13 +41,19 @@ abstract class Router {
 			return $dispatcher->dispatch($method, parse_url($urlPath, PHP_URL_PATH));
 
 		} catch (HttpRouteNotFoundException $e) {
-			$this->lastException = $e;
-			$this->runController("404");
+			$this->runController("404", array(), $e);
 
 		} catch (Exception $e) {
-			$this->lastException = $e;
-			$this->runController("500");
+			$this->runController("500", array(), $e);
 		}
+	}
+
+	protected function runController($controllerPath, $urlParams = array(), $lastException = null) {
+		$controller = Controller::create($this->projectRoot);
+		$controller->setRelativeFilePath($controllerPath);
+		$controller->setUrlParams($urlParams);
+		$controller->setLastException($lastException);
+		$controller->run();
 	}
 
 	protected function getRoutingData() {
