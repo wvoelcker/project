@@ -2,11 +2,18 @@
 namespace WillV\Project;
 
 class View {
+	static protected $defaultProjectRoot;
 	protected $projectRoot, $relativeFilePath, $templatesDirectory = "templates", $templateData, $templateEngine, $templateFileExtension;
 
-	public function create($projectRoot, $relativeFilePath) {
+	static public function create($relativeFilePath, $projectRoot = null) {
 		$view = new View;
-		$view->projectRoot = $projectRoot;
+
+		if (empty($projectRoot)) {
+			$view->projectRoot = self::$defaultProjectRoot;
+		} else {
+			$view->projectRoot = $projectRoot;
+		}
+
 		$view->relativeFilePath = $relativeFilePath;
 
 		$view->templateEngine = new \Mustache_Engine;
@@ -15,7 +22,20 @@ class View {
 		return $view;
 	}
 
+	static public function setDefaultProjectRoot($defaultProjectRoot) {
+		self::$defaultProjectRoot = $defaultProjectRoot;
+	}
+
 	public function set($key, $value) {
+
+		// Allow passing in an array of key/value pairs instead of a single one
+		if (is_array($key)) {
+			foreach ($key as $subkey => $subvalue) {
+				$this->set($subkey, $subvalue);
+			}
+			return $this;
+		}
+
 		$this->templateData[$key] = $value;
 
 		return $this;
