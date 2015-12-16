@@ -26,7 +26,7 @@ class View {
 		self::$defaultProjectRoot = $defaultProjectRoot;
 	}
 
-	public function set($key, $value) {
+	public function set($key, $value = null) {
 
 		// Allow passing in an array of key/value pairs instead of a single one
 		if (is_array($key)) {
