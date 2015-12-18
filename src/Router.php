@@ -22,12 +22,13 @@ use Phroute\Phroute\Exception\HttpRouteNotFoundException;
  * }
  */
 abstract class Router {
-	protected $projectRoot, $routeCollector, $controllersDirectory = "controllers";
+	protected $projectRoot, $activeEnvironment, $routeCollector, $controllersDirectory = "controllers";
 
-	static public function create($projectRoot) {
+	static public function create($projectRoot, Environment $activeEnvironment) {
 		$className = get_called_class();
 		$router = new $className;
 		$router->projectRoot = $projectRoot;
+		$router->activeEnvironment = $activeEnvironment;
 		$router->routeCollector = new RouteCollector();
 		$router->addRoutes();
 
@@ -58,7 +59,7 @@ abstract class Router {
 	}
 
 	protected function runController($controllerPath, $urlParams = array(), $lastException = null) {
-		$controller = Controller::create($this->projectRoot);
+		$controller = Controller::create($this->projectRoot, $this->activeEnvironment);
 		$controller->setRelativeFilePath($controllerPath);
 		$controller->setUrlParams($urlParams);
 		$controller->setLastException($lastException);
