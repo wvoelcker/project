@@ -16,6 +16,9 @@ abstract class EnvironmentList {
 	}
 
 	public function addEnvironment($environmentName, Environment $environment) {
+		if (isset($this->environments[$environmentName])) {
+			throw new \Exception("Environment '".$environmentName."' already added");
+		}
 		$this->environments[$environmentName] = $environment;
 	}
 
