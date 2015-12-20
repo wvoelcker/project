@@ -3,7 +3,7 @@ namespace WillV\Project;
 
 class View {
 	static protected $defaultProjectRoot;
-	protected $projectRoot, $relativeFilePath, $templatesDirectory = "templates", $templateData, $templateEngine, $templateFileExtension;
+	protected $projectRoot, $relativeFilePath, $templatesDirectory = "templates", $templateData, $templateEngine, $templateFileExtension, $filters = array();
 
 	static public function create($relativeFilePath, $projectRoot = null) {
 		$view = new View;
@@ -55,11 +55,29 @@ class View {
 		return $this;
 	}
 
+	public function addFilter($key, $filterFunction) {
+		if (!($filterFunction instanceOf \Closure)) {
+			throw new \Exception("Expected a Closure");
+		}
+		$this->filters[$key] = $filterFunction;
+
+		return $this;
+	}
+
 	protected function isSequentialArray($variable) {
 		return (is_array($variable) and ($variable == array_values($variable)));
 	}
 
 	public function render() {
+
+		// Apply filters
+		foreach ($this->filters as $key => $filterFunction) {
+			if (isset($this->templateData[$key])) {
+				$this->templateData[$key] = $filterFunction($this->templateData[$key]);
+			}
+		}
+
+		// Render template
 		return $this->templateEngine->render(
 			file_get_contents($this->projectRoot."/".$this->templatesDirectory."/".$this->relativeFilePath.(empty($this->templateFileExtension)?"":(".".$this->templateFileExtension))),
 			$this->templateData
