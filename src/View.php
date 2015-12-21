@@ -3,7 +3,7 @@ namespace WillV\Project;
 
 class View {
 	static protected $defaultProjectRoot;
-	protected $projectRoot, $relativeFilePath, $templatesDirectory = "templates", $templateData, $templateEngine, $templateFileExtension, $filters = array();
+	protected $projectRoot, $relativeFilePath, $templatesDirectory = "templates", $templateData = array(), $templateEngine, $templateFileExtension, $filters = array();
 
 	static public function create($relativeFilePath, $projectRoot = null) {
 		$view = new View;
