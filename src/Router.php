@@ -59,11 +59,16 @@ abstract class Router {
 	}
 
 	protected function runController($controllerPath, $urlParams = array(), $lastException = null) {
-		$controller = Controller::create($this->projectRoot, $this->activeEnvironment);
-		$controller->setRelativeFilePath($controllerPath);
-		$controller->setUrlParams($urlParams);
-		$controller->setLastException($lastException);
-		$controller->run();
+		try {
+			$controller = Controller::create($this->projectRoot, $this->activeEnvironment);
+			$controller->setRelativeFilePath($controllerPath);
+			$controller->setUrlParams($urlParams);
+			$controller->setLastException($lastException);
+			$controller->run();
+
+		} catch (\Exception $e) {
+			$this->runController("500", array(), $e);
+		}
 	}
 
 	protected function getRoutingData() {
