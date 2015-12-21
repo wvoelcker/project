@@ -59,7 +59,12 @@ class View {
 		if (!($filterFunction instanceOf \Closure)) {
 			throw new \Exception("Expected a Closure");
 		}
-		$this->filters[$key] = $filterFunction;
+
+		if (!isset($this->filters[$key])) {
+			$this->filters[$key] = array();
+		}
+
+		$this->filters[$key][] = $filterFunction;
 
 		return $this;
 	}
@@ -71,9 +76,11 @@ class View {
 	public function render() {
 
 		// Apply filters
-		foreach ($this->filters as $key => $filterFunction) {
+		foreach ($this->filters as $key => $filterFunctions) {
 			if (isset($this->templateData[$key])) {
-				$this->templateData[$key] = $filterFunction($this->templateData[$key]);
+				foreach ($filterFunctions as $filterFunction) {
+					$this->templateData[$key] = $filterFunction($this->templateData[$key]);
+				}
 			}
 		}
 
