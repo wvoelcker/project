@@ -2,10 +2,10 @@
 namespace WillV\Project;
 
 class View {
-	static protected $defaultProjectRoot;
-	protected $projectRoot, $relativeFilePath, $templatesDirectory = "templates", $templateData = array(), $templateEngine, $templateFileExtension, $filters = array();
+	static protected $defaultProjectRoot, $viewConfigurator;
+	protected $projectRoot, $viewName, $templatesDirectory = "templates", $templateData, $templateEngine, $templateFileExtension, $filters = array();
 
-	static public function create($relativeFilePath, $projectRoot = null) {
+	static public function create($viewName, $projectRoot = null) {
 		$view = new View;
 
 		if (empty($projectRoot)) {
@@ -14,16 +14,24 @@ class View {
 			$view->projectRoot = $projectRoot;
 		}
 
-		$view->relativeFilePath = $relativeFilePath;
+		$view->viewName = $viewName;
 
 		$view->templateEngine = new \Mustache_Engine;
 		$view->templateFileExtension = "mustache";
+
+		if (!empty(self::$viewConfigurator)) {
+			self::$viewConfigurator->configure($viewName, $view);
+		}
 
 		return $view;
 	}
 
 	static public function setDefaultProjectRoot($defaultProjectRoot) {
 		self::$defaultProjectRoot = $defaultProjectRoot;
+	}
+
+	static public function setViewConfigurator($viewConfigurator) {
+		self::$viewConfigurator = $viewConfigurator;
 	}
 
 	public function set($key, $value = null) {
@@ -86,7 +94,7 @@ class View {
 
 		// Render template
 		return $this->templateEngine->render(
-			file_get_contents($this->projectRoot."/".$this->templatesDirectory."/".$this->relativeFilePath.(empty($this->templateFileExtension)?"":(".".$this->templateFileExtension))),
+			file_get_contents($this->projectRoot."/".$this->templatesDirectory."/".$this->viewName.(empty($this->templateFileExtension)?"":(".".$this->templateFileExtension))),
 			$this->templateData
 		);
 	}
