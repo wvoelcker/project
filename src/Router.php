@@ -22,7 +22,7 @@ use Phroute\Phroute\Exception\HttpRouteNotFoundException;
  * }
  */
 abstract class Router {
-	protected $projectRoot, $activeEnvironment, $routeCollector, $controllersDirectory = "controllers";
+	protected $projectRoot, $activeEnvironment, $routeCollector, $controllersDirectory = "controllers", $defaultResponseMimeType = "text/html";
 
 	static public function create($projectRoot, Environment $activeEnvironment) {
 		$className = get_called_class();
@@ -79,5 +79,36 @@ abstract class Router {
 	}
 
 	abstract protected function addRoutes();
+
+	protected function get($pathPattern, $controller, $reponseMimeType = null) {
+		$this->addRoute("get", $pathPattern, $controller, $reponseMimeType);
+	}
+
+	protected function post($pathPattern, $controller, $reponseMimeType = null) {
+		$this->addRoute("post", $pathPattern, $controller, $reponseMimeType);
+	}
+
+	private function addRoute($httpMethod, $pathPattern, $controller, $reponseMimeType = null) {
+
+		// NB this validation is important as the $httpMethod is used to generate a
+		// PHP method name to call on $this->routeCollector (see below)
+		$validMethods = array("get", "head", "post", "put", "delete");
+		if (!in_array($httpMethod, $validMethods)) {
+			throw new Exception("Invalid HTTP method; expected one of the following: {".join(", ", $validMethods)."}");
+		}
+
+		if ($reponseMimeType === null) {
+			$reponseMimeType = $this->defaultResponseMimeType;
+		}
+
+		// NB this assuming that the routeCollector has a suitable method with the same name as the $httpMethod, which
+		// could potentially be a security or flakiness concern; therefore the validation above is important.
+		$routeCollectorMethod = $httpMethod;
+
+		$this->routeCollector->$routeCollectorMethod($pathPattern, function() use ($responseMimeType, $controller) {
+			header("Content-Type: ".$reponseMimeType."; charset=utf-8");
+			$this->runController($controller, func_get_args());
+		});
+	}
 
 }
