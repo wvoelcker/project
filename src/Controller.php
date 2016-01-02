@@ -26,14 +26,17 @@ class Controller {
 
 	public function setRelativeFilePath($relativeFilePath) {
 		$this->relativeFilePath = $relativeFilePath;
+		return $this;
 	}
 
 	public function setUrlParams($urlParams) {
 		$this->urlParams = $urlParams;
+		return $this;
 	}
 
 	public function setLastException($lastException) {
 		$this->lastException = $lastException;
+		return $this;
 	}
 
 	public function run() {
