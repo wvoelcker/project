@@ -15,7 +15,7 @@ use Phroute\Phroute\Exception\HttpRouteNotFoundException;
  *	protected function addRoutes() {
  *
  *		$this->routeCollector->get("/", function() {
- *			$this->runController("home", func_get_args());		
+ *			$this->runController("home", func_get_args());
  *		});
  *
  *	}
@@ -52,7 +52,7 @@ abstract class Router {
 	/**
 	 * Abstracted out into its own function, to allow overriding this
 	 * for dependency injection purposes (e.g. when unit testing)
-	 * 
+	 *
 	 */
 	protected function getDispatcher($routingData) {
 		return new Dispatcher($routingData);
@@ -80,15 +80,15 @@ abstract class Router {
 
 	abstract protected function addRoutes();
 
-	protected function get($pathPattern, $controller, $reponseMimeType = null) {
-		$this->addRoute("get", $pathPattern, $controller, $reponseMimeType);
+	protected function get($pathPattern, $controller, $responseMimeType = null) {
+		$this->addRoute("get", $pathPattern, $controller, $responseMimeType);
 	}
 
-	protected function post($pathPattern, $controller, $reponseMimeType = null) {
-		$this->addRoute("post", $pathPattern, $controller, $reponseMimeType);
+	protected function post($pathPattern, $controller, $responseMimeType = null) {
+		$this->addRoute("post", $pathPattern, $controller, $responseMimeType);
 	}
 
-	private function addRoute($httpMethod, $pathPattern, $controller, $reponseMimeType = null) {
+	private function addRoute($httpMethod, $pathPattern, $controller, $responseMimeType = null) {
 
 		// NB this validation is important as the $httpMethod is used to generate a
 		// PHP method name to call on $this->routeCollector (see below)
@@ -97,8 +97,8 @@ abstract class Router {
 			throw new Exception("Invalid HTTP method; expected one of the following: {".join(", ", $validMethods)."}");
 		}
 
-		if ($reponseMimeType === null) {
-			$reponseMimeType = $this->defaultResponseMimeType;
+		if ($responseMimeType === null) {
+			$responseMimeType = $this->defaultResponseMimeType;
 		}
 
 		// NB this assuming that the routeCollector has a suitable method with the same name as the $httpMethod, which
@@ -106,7 +106,7 @@ abstract class Router {
 		$routeCollectorMethod = $httpMethod;
 
 		$this->routeCollector->$routeCollectorMethod($pathPattern, function() use ($responseMimeType, $controller) {
-			header("Content-Type: ".$reponseMimeType."; charset=utf-8");
+			header("Content-Type: ".$responseMimeType."; charset=utf-8");
 			$this->runController($controller, func_get_args());
 		});
 	}
