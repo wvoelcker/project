@@ -99,6 +99,10 @@ class View {
 		);
 	}
 
+	public function __toString() {
+		return $this->render();
+	}
+
 	private function getTemplateContents() {
 		$templateFile = ($this->projectRoot."/".$this->templatesDirectory."/".$this->viewName.(empty($this->templateFileExtension)?"":(".".$this->templateFileExtension)));
 		if (!isset(self::$templateCache[$templateFile])) {
