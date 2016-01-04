@@ -2,7 +2,7 @@
 namespace WillV\Project;
 
 class View {
-	static protected $defaultProjectRoot, $viewConfigurator;
+	static protected $defaultProjectRoot, $viewConfigurator, $templateCache = array();
 	protected $projectRoot, $viewName, $templatesDirectory = "templates", $templateData, $templateEngine, $templateFileExtension, $filters = array();
 
 	static public function create($viewName, $projectRoot = null) {
@@ -94,9 +94,18 @@ class View {
 
 		// Render template
 		return $this->templateEngine->render(
-			file_get_contents($this->projectRoot."/".$this->templatesDirectory."/".$this->viewName.(empty($this->templateFileExtension)?"":(".".$this->templateFileExtension))),
+			$this->getTemplateContents(),
 			$this->templateData
 		);
+	}
+
+	private function getTemplateContents() {
+		$templateFile = ($this->projectRoot."/".$this->templatesDirectory."/".$this->viewName.(empty($this->templateFileExtension)?"":(".".$this->templateFileExtension)));
+		if (!isset(self::$templateCache[$templateFile])) {
+			self::$templateCache[$templateFile] = file_get_contents($templateFile);
+		}
+
+		return self::$templateCache[$templateFile];
 	}
 }
 
