@@ -90,6 +90,14 @@ abstract class Router {
 
 	private function addRoute($httpMethod, $pathPattern, $controller, $responseMimeType = null) {
 
+		// Allow supplying an array of patterns
+		if (is_array($pathPattern)) {
+			foreach ($pathPattern as $individualPattern) {
+				$this->addRoute($httpMethod, $individualPattern, $controller, $responseMimeType);
+			}
+			return;
+		}
+
 		// NB this validation is important as the $httpMethod is used to generate a
 		// PHP method name to call on $this->routeCollector (see below)
 		$validMethods = array("get", "head", "post", "put", "delete");
