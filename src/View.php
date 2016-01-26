@@ -3,7 +3,7 @@ namespace WillV\Project;
 
 class View {
 	static protected $defaultProjectRoot, $viewConfigurator, $templateCache = array();
-	protected $projectRoot, $viewName, $templatesDirectory = "templates", $templateData, $templateEngine, $templateFileExtension, $filters = array();
+	protected $projectRoot, $viewName, $templatesDirectory = "templates", $templateData, $templateEngine, $templateFileExtension, $filters = array(), $globalFilters = array();
 
 	static public function create($viewName, $projectRoot = null) {
 		$view = new View;
@@ -63,16 +63,26 @@ class View {
 		return $this;
 	}
 
-	public function addFilter($key, $filterFunction) {
+	public function addFilter($key, $filterFunction = null) {
+
+		// If only one argument supplied, interpret it as a global filter
+		if ($filterFunction === null) {
+			$filterFunction = $key;
+			$filters = &$this->globalFilters;
+
+		// If two arguments supplied, interpret them as a data-key and a filter for that data
+		} else {
+			if (!isset($this->filters[$key])) {
+				$this->filters[$key] = array();
+			}
+			$filters = &$this->filters[$key];
+		}
+
 		if (!($filterFunction instanceOf \Closure)) {
 			throw new \Exception("Expected a Closure");
 		}
 
-		if (!isset($this->filters[$key])) {
-			$this->filters[$key] = array();
-		}
-
-		$this->filters[$key][] = $filterFunction;
+		$filters[] = $filterFunction;
 
 		return $this;
 	}
