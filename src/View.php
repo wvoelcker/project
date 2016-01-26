@@ -102,6 +102,11 @@ class View {
 			}
 		}
 
+		// Apply global filters
+		foreach ($this->globalFilters as $filterFunction) {
+			$this->templateData = $filterFunction($this->templateData);
+		}
+
 		// Render template
 		return $this->templateEngine->render(
 			$this->getTemplateContents(),
