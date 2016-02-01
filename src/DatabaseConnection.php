@@ -12,6 +12,10 @@ class DatabaseConnection {
 
 	public function getPDO() {
 		if (empty($this->pdo)) {
+			if (empty($this->activeEnvironment)) {
+				throw new Exception("Can't generate a PDO without an active environment having been supplied");
+			}
+
 			$this->pdo = new \pdo(
 				"mysql:host=".$this->activeEnvironment->get("database-host").";dbname=".$this->activeEnvironment->get("database-name").";charset=utf8",
 				$this->activeEnvironment->get("database-username"),
