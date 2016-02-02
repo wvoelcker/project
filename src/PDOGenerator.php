@@ -2,7 +2,7 @@
 namespace WillV\Project;
 
 class PDOGenerator {
-	protected $pdo, $hostname = null, $databasename, $username, $password;
+	protected $pdo, $hostname = null, $databasename = null, $username = null, $password = null;
 
 	static public function create($hostname, $databasename, $username, $password) {
 		$db = new PDOGenerator;
