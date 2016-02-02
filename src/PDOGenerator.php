@@ -2,7 +2,7 @@
 namespace WillV\Project;
 
 class PDOGenerator {
-	protected $pdo, $hostname, $databasename, $username, $password;
+	protected $pdo, $hostname = null, $databasename, $username, $password;
 
 	static public function create($hostname, $databasename, $username, $password) {
 		$db = new PDOGenerator;
@@ -17,18 +17,15 @@ class PDOGenerator {
 	}
 
 	public function getPDO() {
-		if (empty($this->pdo)) {
-			if (($this->hostname === null) or ($this->databasename === null) or ($this->username === null) or ($this->password === null)) {
-				throw new Exception("Can't generate a PDO without a hostname, databasename, username, and password");
-			}
-
-			$this->pdo = new \pdo(
-				"mysql:host=".$this->hostname.";dbname=".$this->databasename.";charset=utf8",
-				$this->username,
-				$this->password,
-				array(\PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION)
-			);
+		if (($this->hostname === null) or ($this->databasename === null) or ($this->username === null) or ($this->password === null)) {
+			throw new Exception("Can't generate a PDO without a hostname, databasename, username, and password");
 		}
-		return $this->pdo;
+
+		return new \pdo(
+			"mysql:host=".$this->hostname.";dbname=".$this->databasename.";charset=utf8",
+			$this->username,
+			$this->password,
+			array(\PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION)
+		);
 	}
 }
