@@ -18,8 +18,8 @@ class PDOGenerator {
 
 	public function getPDO() {
 		if (empty($this->pdo)) {
-			if (empty($this->activeEnvironment)) {
-				throw new Exception("Can't generate a PDO without an active environment having been supplied");
+			if (($this->hostname === null) or ($this->databasename === null) or ($this->username === null) or ($this->password === null)) {
+				throw new Exception("Can't generate a PDO without a hostname, databasename, username, and password");
 			}
 
 			$this->pdo = new \pdo(
