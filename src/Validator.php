@@ -38,20 +38,20 @@ class Validator {
 
 			if (!isset($data[$fieldname])) {
 				if (!empty($fielddetails["required"])) {
-					$foundErrors[$fielddetails] = "This field is required";
+					$foundErrors[$fieldname] = "This field is required";
 				}
 				continue;
 			}
 
 			if (empty($data[$fieldname])) {
 				if (!empty($fielddetails["notempty"])) {
-					$foundErrors[$fielddetails] = "This field should not be empty";
+					$foundErrors[$fieldname] = "This field should not be empty";
 				}
 				continue;
 			}
 
 			if (!empty($fielddetails["allowedValues"]) and !in_array($data[$fieldname], $fielddetails["allowedValues"])) {
-				$foundErrors[$fielddetails] = "This field should have one of the following values: {".join(", ", $fielddetails["allowedValues"])."}";
+				$foundErrors[$fieldname] = "This field should have one of the following values: {".join(", ", $fielddetails["allowedValues"])."}";
 			}
 
 			if (!empty($fielddetails["customValidation"])) {
