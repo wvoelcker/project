@@ -32,7 +32,7 @@ abstract class Mailer {
 
 	public function setFrom($address, $display) {
 		$this->mailer->setFrom($address, $display, $this->charset);
-		$haveFromAddress = true;
+		$this->haveFromAddress = true;
 		return $this;
 	}
 
