@@ -7,7 +7,7 @@ namespace WillV\Project;
  *
  * E.g.
  *
- * class ProjectViewConfigurator extends ViewConfigurator {
+ * class MyConfigurator extends ViewConfigurator {
  *
  *	protected function addConfigs() {
  *		$this->configs["page"] = function($view) {
@@ -20,8 +20,8 @@ namespace WillV\Project;
  *
  * // Set up views
  * View::setDefaultProjectRoot($projectRoot);
- * require_once $projectRoot."/project-config/ProjectViewConfigurator.php";
- * View::setViewConfigurator(ProjectViewConfigurator::create());
+ * require_once $projectRoot."/config/MyConfigurator.php";
+ * View::setViewConfigurator(MyConfigurator::create());
  *
  * 
  */

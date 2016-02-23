@@ -1,24 +1,39 @@
 <?php
 namespace WillV\Project;
 
-class EnvironmentSetup {
-	protected $projectRoot, $configRoot;
-	protected $configDir = "/project-config", $timezone = "UTC";
+abstract class EnvironmentSetup {
+	protected $projectRoot, $configRoot, $timezone = "UTC";
+	protected $autoLoaderSet = array(), $viewConfigurator = array(), $environmentList = array();
 
 	private function __construct() {
 	}
 
-	static public function create() {
+	static public function create($projectRoot, $configDir = "config") {
 		$className = get_called_class();
 		$setup = new $className;
+
+		$setup->projectRoot = $projectRoot;
+		$setup->configRoot = $projectRoot."/".$configDir;
+
+		$setup->registerAutoLoaders();
+		$setup->addHelpers();
 
 		return $setup;
 	}
 
-	public function doSetup($projectRoot) {
-		$this->projectRoot = $projectRoot;
-		$this->configRoot = $this->projectRoot.$this->configDir;
+	public function setAutoLoaders(AutoLoaderSet $autoLoaderSet) {
+		$this->autoLoaderSet = $autoLoaderSet;
+	}
 
+	public function setViewConfigurator(ViewConfigurator $viewConfigurator) {
+		$this->viewConfigurator = $viewConfigurator;
+	}
+
+	public function setEnvironmentList(EnvironmentList $environmentList) {
+		$this->environmentList = $environmentList;
+	}
+
+	public function doSetup() {
 		$this->setUpTimeZone();
 		$this->setUpAutoloaders();
 		$this->setUpViews();
@@ -26,25 +41,33 @@ class EnvironmentSetup {
 		return $activeEnvironment;
 	}
 
+	abstract protected function registerAutoLoaders();
+
+	abstract protected function addHelpers();
+
 	private function setUpTimeZone() {
 		date_default_timezone_set($this->timezone);
 	}
 
 	private function setUpAutoloaders() {
-		require_once $this->projectRoot."/vendor/autoload.php";
-		require_once $this->configRoot."/ProjectAutoloaderSet.php";
-		\ProjectAutoloaderSet::create($this->projectRoot)->register();
+		if (!empty($this->autoLoaderSet)) {
+			$this->autoLoaderSet->register();
+		}
 	}
 
 	private function setUpViews() {
 		View::setDefaultProjectRoot($this->projectRoot);
-		require_once $this->configRoot."/ProjectViewConfigurator.php";
-		View::setViewConfigurator(\ProjectViewConfigurator::create());
+		if (!empty($this->viewConfigurator)) {
+			View::setViewConfigurator($this->viewConfigurator);
+		}
 	}
 
 	private function setUpEnvironment() {
-		require_once $this->configRoot."/ProjectEnvironmentList.php";
-		$activeEnvironment = \ProjectEnvironmentList::create()->findActiveEnvironment();
+		if (empty($this->environmentList)) {
+			throw new \Exception("Please supply an environment list first");
+		}
+
+		$activeEnvironment = $this->environmentList->findActiveEnvironment();
 		if (empty($activeEnvironment)) {
 			throw new \Exception("No active environment found");
 		}
