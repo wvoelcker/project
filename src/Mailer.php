@@ -3,7 +3,7 @@ namespace WillV\Project;
 require_once __DIR__."/Mailer/OmniTI_Mailer.php";
 
 abstract class Mailer {
-	private $mailer, $charset = "utf-8";
+	private $mailer, $charset = "utf-8", $haveFromAddress = false;
 
 	public function create() {
 		$className = get_called_class();
@@ -32,6 +32,7 @@ abstract class Mailer {
 
 	public function setFrom($address, $display) {
 		$this->mailer->setFrom($address, $display, $this->charset);
+		$haveFromAddress = true;
 		return $this;
 	}
 
@@ -60,6 +61,9 @@ abstract class Mailer {
 	}
 
 	public function send() {
+		if ($this->haveFromAddress == false) {
+			throw new \Exception("Please supply a from address before sending the email");
+		}
 		return $this->mailer->send();
 	}
 
