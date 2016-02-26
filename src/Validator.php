@@ -4,7 +4,7 @@ namespace WillV\Project;
 class Validator {
 	protected $fields;
 
-	public function create($fields) {
+	public function create($fields = array()) {
 		$validator = new Validator;
 		$validator->fields = $fields;
 		return $validator;
