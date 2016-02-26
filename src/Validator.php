@@ -1,14 +1,18 @@
 <?php
 namespace WillV\Project;
 
-class Validator {
+abstract class Validator {
 	protected $fields;
 
-	public function create($fields = array()) {
-		$validator = new Validator;
-		$validator->fields = $fields;
+	static public function create() {
+		$className = get_called_class();
+
+		$validator = new $className;
+		$validator->addFields();
 		return $validator;
 	}
+
+	abstract protected function addFields();
 
 	/**
 	 * Private constructor, to enforce use of factory methods
@@ -18,6 +22,10 @@ class Validator {
 	public function setFields($fields) {
 		$this->fields = $fields;
 		return $this;
+	}
+
+	public function getFields() {
+		return $this->fields;
 	}
 
 	public function isValid($data, &$errors = null) {
@@ -66,7 +74,7 @@ class Validator {
 				} else {
 					$errmsg = "This field is invalid";
 				}
-				
+
 				$foundErrors[$fieldname] = $errmsg;
 			}
 		}
