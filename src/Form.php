@@ -1,15 +1,15 @@
 <?php
 namespace WillV\Project;
 
-abstract class Validator {
+abstract class Form {
 	protected $fields;
 
 	static public function create() {
 		$className = get_called_class();
 
-		$validator = new $className;
-		$validator->addFields();
-		return $validator;
+		$form = new $className;
+		$form->addFields();
+		return $form;
 	}
 
 	abstract protected function addFields();
