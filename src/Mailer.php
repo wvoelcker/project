@@ -5,7 +5,7 @@ require_once __DIR__."/Mailer/OmniTI_Mailer.php";
 abstract class Mailer {
 	private $mailer, $charset = "utf-8", $haveFromAddress = false;
 
-	public function create() {
+	static public function create() {
 		$className = get_called_class();
 		$mailer = new $className;
 		$mailer->mailer = new \OmniTI_Mail_Mailer;
@@ -13,7 +13,7 @@ abstract class Mailer {
 		return $mailer;
 	}
 
-	public function createFromMessageDetails($toName, $toAddress, $subject, $bodyText = "", $bodyHTML = "") {
+	static public function createFromMessageDetails($toName, $toAddress, $subject, $bodyText = "", $bodyHTML = "") {
 		$mailer = static::create();
 
 		$mailer->addRecipient($toAddress, $toName);

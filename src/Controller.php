@@ -7,7 +7,7 @@ class Controller {
 	// The following variables are here to be used from within included files
 	protected $projectRoot, $activeEnvironment, $urlParams = array(), $lastException = null;
 
-	public function create($projectRoot, $activeEnvironment) {
+	static public function create($projectRoot, $activeEnvironment) {
 		$controller = new Controller($projectRoot, $activeEnvironment);
 		return $controller;
 	}
