@@ -49,6 +49,8 @@ abstract class Form {
 				if (!empty($fielddetails["notempty"])) {
 					$foundErrors[$fieldname] = "This field should not be empty";
 				}
+
+				// NB no 'continue' here because 0 is an empty value, but can also be processed by the rest of this function
 			}
 
 			if (!isset($data[$fieldname])) {
