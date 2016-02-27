@@ -44,16 +44,17 @@ abstract class Form {
 
 		foreach ($this->fields as $fieldname => $fielddetails) {
 
-			if (!isset($data[$fieldname])) {
-				if (!empty($fielddetails["required"])) {
-					$foundErrors[$fieldname] = "This field is required";
+			// Check for empty-but-not-supposed to be (NB do this before the isset check, or "notempty" fields that are not set will pass validation)
+			if (empty($data[$fieldname])) {
+				if (!empty($fielddetails["notempty"])) {
+					$foundErrors[$fieldname] = "This field should not be empty";
 				}
 				continue;
 			}
 
-			if (empty($data[$fieldname])) {
-				if (!empty($fielddetails["notempty"])) {
-					$foundErrors[$fieldname] = "This field should not be empty";
+			if (!isset($data[$fieldname])) {
+				if (!empty($fielddetails["required"])) {
+					$foundErrors[$fieldname] = "This field is required";
 				}
 				continue;
 			}
