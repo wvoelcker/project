@@ -18,7 +18,7 @@ abstract class HeaderSet {
 
 	public function send() {
 		foreach ($this->headers as $name => $value) {
-			header($name, $value);
+			header($name.": ".$value);
 		}
 	}
 }
