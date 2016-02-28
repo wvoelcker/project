@@ -1,9 +1,7 @@
 <?php
 namespace WillV\Project;
 
-trait AbstractTemplate {
-	protected $globalConfig, $configs = array();
-
+trait Trait_AbstractTemplate {
 	static public function create() {
 		$className = get_called_class();
 		$instance = new $className;
