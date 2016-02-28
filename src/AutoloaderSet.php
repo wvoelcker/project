@@ -2,15 +2,8 @@
 namespace WillV\Project;
 
 abstract class AutoloaderSet {
+	use Trait_AbstractTemplate;
 	protected $projectRoot, $autoloaders = array();
-
-	static public function create($projectRoot) {
-		$className = get_called_class();
-		$set = new $className($projectRoot);
-		$set->addAutoloaders();
-
-		return $set;
-	}
 
 	protected function __construct($projectRoot) {
 		$this->projectRoot = $projectRoot;
@@ -25,7 +18,5 @@ abstract class AutoloaderSet {
 			spl_autoload_register($autoloader);
 		}
 	}
-
-	abstract protected function addAutoloaders();
 
 }

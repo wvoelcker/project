@@ -5,15 +5,8 @@
 namespace WillV\Project;
 
 abstract class EnvironmentList {
+	use Trait_AbstractTemplate;
 	protected $environments = array();
-
-	static public function create() {
-		$className = get_called_class();
-		$list = new $className;
-		$list->addEnvironments();
-
-		return $list;
-	}
 
 	public function addEnvironment($environmentName, Environment $environment) {
 		if (isset($this->environments[$environmentName])) {
@@ -21,8 +14,6 @@ abstract class EnvironmentList {
 		}
 		$this->environments[$environmentName] = $environment;
 	}
-
-	abstract protected function addEnvironments();
 
 	public function findActiveEnvironment() {
 		foreach ($this->environments as $environment) {

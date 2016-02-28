@@ -2,24 +2,18 @@
 namespace WillV\Project;
 
 abstract class EnvironmentSetup {
+	use Trait_AbstractTemplate;
 	protected $projectRoot, $configRoot, $timezone = "UTC";
 	protected $autoLoaderSet = array(), $viewConfigurator = array(), $environmentList = array();
 
-	private function __construct() {
+	protected function preSetUp() {
+		$args = func_get_args();
+		$this->projectRoot = $args[0];
+		$this->configRoot = $args[0]."/".(empty($args[1])?"config":$args[1]);
+		$this->registerAutoLoaders();
 	}
 
-	static public function create($projectRoot, $configDir = "config") {
-		$className = get_called_class();
-		$setup = new $className;
-
-		$setup->projectRoot = $projectRoot;
-		$setup->configRoot = $projectRoot."/".$configDir;
-
-		$setup->registerAutoLoaders();
-		$setup->addHelpers();
-
-		return $setup;
-	}
+	abstract protected function registerAutoLoaders();
 
 	public function setAutoLoaders(AutoLoaderSet $autoLoaderSet) {
 		$this->autoLoaderSet = $autoLoaderSet;
@@ -40,10 +34,6 @@ abstract class EnvironmentSetup {
 		$activeEnvironment = $this->setUpEnvironment();
 		return $activeEnvironment;
 	}
-
-	abstract protected function registerAutoLoaders();
-
-	abstract protected function addHelpers();
 
 	private function setUpTimeZone() {
 		date_default_timezone_set($this->timezone);

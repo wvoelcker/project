@@ -5,18 +5,8 @@
 namespace WillV\Project;
 
 abstract class Redirector {
+	use Trait_AbstractTemplate;
 	protected $redirects = array(), $defaultStatusCode = 302;
-
-	static public function create() {
-		$className = get_called_class();
-		$redirector = new $className;
-		$redirector->addRedirects();
-
-		return $redirector;
-	}
-
-	private function __construct() {
-	}
 
 	public function redirect($fullRequestURL) {
 		$have301 = false;
@@ -50,8 +40,6 @@ abstract class Redirector {
 			$this->doRedirect($workingURL, ($have301?301:302));
 		}
 	}
-
-	abstract protected function addRedirects();
 
 	public function addRedirect($from, $to, $statuscode = null) {
 		if (empty($statuscode)) {

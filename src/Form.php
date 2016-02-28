@@ -2,27 +2,8 @@
 namespace WillV\Project;
 
 abstract class Form {
+	use Trait_AbstractTemplate;
 	protected $fields;
-
-	static public function create() {
-		$className = get_called_class();
-
-		$form = new $className;
-		$form->addFields();
-		return $form;
-	}
-
-	abstract protected function addFields();
-
-	/**
-	 * Private constructor, to enforce use of factory methods
-	 **/
-	private function __construct() {}
-
-	public function setFields($fields) {
-		$this->fields = $fields;
-		return $this;
-	}
 
 	public function getFields() {
 		return $this->fields;

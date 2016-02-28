@@ -28,16 +28,9 @@ namespace WillV\Project;
 
 
 abstract class ViewConfigurator {
+	use Trait_AbstractTemplate;
 	protected $globalConfig, $configs = array();
 
-	static public function create() {
-		$className = get_called_class();
-		$configurator = new $className;
-		$configurator->addConfigs();
-
-		return $configurator;
-	}
-	
 	public function configure($viewName, $view) {
 		if (!empty($this->globalConfig)) {
 			call_user_func_array($this->globalConfig, array($view));
@@ -46,7 +39,5 @@ abstract class ViewConfigurator {
 			call_user_func_array($this->configs[$viewName], array($view));
 		}
 	}
-
-	abstract protected function addConfigs();
 }
 

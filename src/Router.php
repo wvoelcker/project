@@ -11,17 +11,14 @@ use Phroute\Phroute\Exception\HttpRouteNotFoundException;
  * method with appropriate routing logic.
  */
 abstract class Router {
+	use Trait_AbstractTemplate;
 	protected $projectRoot, $activeEnvironment, $routeCollector, $controllersDirectory = "controllers", $defaultResponseMimeType = "text/html";
 
-	static public function create($projectRoot, Environment $activeEnvironment) {
-		$className = get_called_class();
-		$router = new $className;
-		$router->projectRoot = $projectRoot;
-		$router->activeEnvironment = $activeEnvironment;
-		$router->routeCollector = new RouteCollector();
-		$router->addRoutes();
-
-		return $router;
+	protected function preSetUp() {
+		$args = func_get_args();
+		$this->projectRoot = $args[0];
+		$this->activeEnvironment = $args[1];
+		$this->routeCollector = new RouteCollector();
 	}
 
 	public function go($method, $urlPath) {
@@ -66,8 +63,6 @@ abstract class Router {
 		// NB. You can cache the return value from $router->getData() so you don't have to create the routes each request - massive speed gains
 		return $this->routeCollector->getData();
 	}
-
-	abstract protected function addRoutes();
 
 	protected function get($pathPattern, $controller, $responseMimeType = null) {
 		$this->addRoute("get", $pathPattern, $controller, $responseMimeType);
