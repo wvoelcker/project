@@ -7,6 +7,7 @@ trait Trait_AbstractTemplate {
 		$instance = new $className;
 		call_user_func_array(array($instance, "preSetUp"), func_get_args());
 		$instance->setUp();
+		call_user_func_array(array($instance, "postSetUp"), func_get_args());
 
 		return $instance;
 	}
@@ -14,6 +15,7 @@ trait Trait_AbstractTemplate {
 	private function __construct() {}
 
 	protected function preSetUp() {}
+	protected function postSetUp() {}
 	
 	abstract protected function setUp();
 }

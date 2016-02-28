@@ -2,15 +2,11 @@
 namespace WillV\Project;
 
 abstract class Environment {
+	use Trait_AbstractTemplate;
 	protected $data, $isActiveClosure, $requiredFields;
 
-	static public function create($data, \Closure $isActiveClosure) {	
-		$className = get_called_class();
-		$environment = new $className($data, $isActiveClosure);
-		return $environment;
-	}
-
-	private function __construct($data, \Closure $isActiveClosure) {
+	protected function postSetUp() {
+		list($data, $isActiveClosure) = func_get_args();
 		$notSupplied = array_diff($this->requiredFields, array_keys($data));
 		if (!empty($notSupplied)) {
 			throw new \Exception("Missing fields: {".join(", ", $notSupplied)."}");
