@@ -3,7 +3,7 @@ namespace WillV\Project;
 
 class View {
 	static protected $defaultProjectRoot, $viewConfigurator, $templateCache = array();
-	protected $projectRoot, $viewName, $templatesDirectory = "templates", $templateData, $templateEngine, $templateFileExtension, $filters = array(), $globalFilters = array();
+	protected $projectRoot, $viewName, $templatesDirectory = "templates", $templateData, $templateEngine, $templateFileExtension, $filters = array(), $globalFilters = array(), $postFilters = array();
 
 	static public function create($viewName, $projectRoot = null) {
 		$view = new View;
@@ -87,6 +87,10 @@ class View {
 		return $this;
 	}
 
+	public function addPostFilter($filterFunction) {
+		$this->postFilters[] = $filterFunction;
+	}
+
 	protected function isSequentialArray($variable) {
 		return (is_array($variable) and ($variable == array_values($variable)));
 	}
@@ -108,10 +112,17 @@ class View {
 		}
 
 		// Render template
-		return $this->templateEngine->render(
+		$output = $this->templateEngine->render(
 			$this->getTemplateContents(),
 			$this->templateData
 		);
+
+		// Apply post-filters
+		foreach ($this->postFilters as $filterFunction) {
+			$output = $filterFunction($output, $this->templateData);
+		}
+
+		return $output;
 	}
 
 	public function __toString() {
