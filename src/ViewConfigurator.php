@@ -29,7 +29,7 @@ namespace WillV\Project;
 
 abstract class ViewConfigurator {
 	use Trait_AbstractTemplate;
-	protected $globalConfigs = array(), $configs = array();
+	private $globalConfigs = array(), $configs = array();
 
 	public function configure($viewName, $view) {
 		if (!empty($this->globalConfigs)) {
