@@ -96,30 +96,31 @@ class View {
 	}
 
 	public function render() {
+		$templateData = $this->templateData;
 
 		// Apply filters
 		foreach ($this->filters as $key => $filterFunctions) {
-			if (isset($this->templateData[$key])) {
+			if (isset($templateData[$key])) {
 				foreach ($filterFunctions as $filterFunction) {
-					$this->templateData[$key] = $filterFunction($this->templateData[$key]);
+					$templateData[$key] = $filterFunction($this->templateData[$key]);
 				}
 			}
 		}
 
 		// Apply global filters
 		foreach ($this->globalFilters as $filterFunction) {
-			$this->templateData = $filterFunction($this->templateData);
+			$templateData = $filterFunction($templateData);
 		}
 
 		// Render template
 		$output = $this->templateEngine->render(
 			$this->getTemplateContents(),
-			$this->templateData
+			$templateData
 		);
 
 		// Apply post-filters
 		foreach ($this->postFilters as $filterFunction) {
-			$output = $filterFunction($output, $this->templateData);
+			$output = $filterFunction($output, $templateData);
 		}
 
 		return $output;
