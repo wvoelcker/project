@@ -44,9 +44,20 @@ abstract class ViewConfigurator {
 		}
 	}
 
-	protected function addConfig($configFunction, $viewNames = null) {
+	protected function addConfig($viewNames, $configFunction = null) {
+
+		// If only one argument is provided, it should be the configFunction,
+		// and will be interpreted as applying to all views
+		if (empty($configFunction) and is_callable($viewNames)) {
+			$configFunction = $viewNames;
+			$viewNames = null;
+		}
+
+		// Store global config
 		if (empty($viewNames)) {
 			$this->globalConfigs[] = $configFunction;
+
+		// Store view-specific config
 		} else {
 			if (!is_array($viewNames)) {
 				$viewNames = array($viewNames);
