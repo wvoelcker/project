@@ -29,14 +29,34 @@ namespace WillV\Project;
 
 abstract class ViewConfigurator {
 	use Trait_AbstractTemplate;
-	protected $globalConfig, $configs = array();
+	protected $globalConfigs = array(), $configs = array();
 
 	public function configure($viewName, $view) {
-		if (!empty($this->globalConfig)) {
-			call_user_func_array($this->globalConfig, array($view));
+		if (!empty($this->globalConfigs)) {
+			foreach ($this->globalConfigs as $globalConfig) {
+				call_user_func_array($globalConfig, array($view));
+			}
 		}
-		if (isset($this->configs[$viewName])) {
-			call_user_func_array($this->configs[$viewName], array($view));
+		if (!empty($this->configs[$viewName])) {
+			foreach ($this->configs[$viewName] as $config) {
+				call_user_func_array($config, array($view));
+			}
+		}
+	}
+
+	protected function addConfig($configFunction, $viewNames = null) {
+		if (empty($viewNames)) {
+			$this->globalConfigs[] = $configFunction;
+		} else {
+			if (!is_array($viewNames)) {
+				$viewNames = array($viewNames);
+			}
+			foreach ($viewNames as $viewName) {
+				if (!isset($this->configs[$viewName])) {
+					$this->configs[$viewName] = array();
+				}
+				$this->configs[$viewName][] = $configFunction;
+			}
 		}
 	}
 }
