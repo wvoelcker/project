@@ -3,7 +3,8 @@
 	"description": "A minimal framework for PHP projects",
     "require": {
         "mustache/mustache": "^2.9",
-        "phroute/phroute": "^2.1"
+        "phroute/phroute": "^2.1",
+        "swiftmailer/swiftmailer": "^5.4"
     },
     "autoload": {
         "psr-4": {
