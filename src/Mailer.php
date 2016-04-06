@@ -1,14 +1,13 @@
 <?php
 namespace WillV\Project;
-require_once __DIR__."/Mailer/OmniTI_Mailer.php";
 
 abstract class Mailer {
-	private $mailer, $charset = "utf-8", $haveFromAddress = false;
+	private $message, $haveFromAddress = false, $haveBodyText = false;
 
 	static public function create() {
 		$className = get_called_class();
 		$mailer = new $className;
-		$mailer->mailer = new \OmniTI_Mail_Mailer;
+		$mailer->message = \Swift_Message::newInstance();
 
 		return $mailer;
 	}
@@ -31,40 +30,50 @@ abstract class Mailer {
 	}
 
 	public function setFrom($address, $display) {
-		$this->mailer->setFrom($address, $display, $this->charset);
+		$this->message->setFrom(array($address => $display));
 		$this->haveFromAddress = true;
 		return $this;
 	}
 
 	public function addRecipient($address, $display) {
-		$this->mailer->addRecipient($address, $display, "To", null, $this->charset);
+		$this->message->addTo($address, $display);
 		return $this;
 	}
 
 	public function setSubject($subject) {
-		$this->mailer->setSubject($subject, $this->charset);
+		$this->message->setSubject($subject);
 		return $this;
 	}
 
 	public function setBodyText($body) {
-		$this->mailer->setBodyText($body, $this->charset);
+		$this->message->setBody($body);
+		$this->haveBodyText = true;
 		return $this;
 	}
 
 	public function setBodyHTML($body) {
-		$this->mailer->setBodyHTML($body, $this->charset);
+		if (empty($this->haveBodyText)) {
+			throw new \Exception("Please supply body text first");
+		}
+		$this->message->addPart($body, "text/html");
 		return $this;
 	}
 
 	public function embedImage($filename, $mimetype, $data) {
-		return $this->mailer->embedImage($filename, $mimetype, $data);
+		return $this->message->embed(new \Swift_Image($data, $filename, $mimetype));
 	}
 
 	public function send() {
 		if ($this->haveFromAddress == false) {
 			throw new \Exception("Please supply a from address before sending the email");
 		}
-		return $this->mailer->send();
+
+		// NB this uses the PHP mail() function - there are better transports available if required.
+		// see http://swiftmailer.org/docs/sending.html
+		$transport = \Swift_MailTransport::newInstance();
+
+		$mailer = \Swift_Mailer::newInstance($transport);
+		return $mailer->send($this->message);
 	}
 
 }
