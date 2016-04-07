@@ -18,7 +18,7 @@ class PDOGenerator {
 
 	public function getPDO() {
 		if (($this->hostname === null) or ($this->databasename === null) or ($this->username === null) or ($this->password === null)) {
-			throw new Exception("Can't generate a PDO without a hostname, databasename, username, and password");
+			throw new \Exception("Can't generate a PDO without a hostname, databasename, username, and password");
 		}
 
 		return new \pdo(
