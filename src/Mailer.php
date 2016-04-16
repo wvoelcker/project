@@ -63,6 +63,10 @@ abstract class Mailer {
 		return $this->message->embed(new \Swift_Image($data, $filename, $mimetype));
 	}
 
+	public function attachFile($filename, $mimeType, $data) {
+		return $this->message->attach(new \Swift_Attachment($data, $filename, $mimeType));
+	}
+
 	public function send() {
 		if ($this->haveFromAddress == false) {
 			throw new \Exception("Please supply a from address before sending the email");
