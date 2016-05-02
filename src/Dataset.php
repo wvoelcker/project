@@ -49,7 +49,7 @@ abstract class Dataset {
 			if (!empty($fielddetails["validateDateMySQL"])) {				
 				$result = preg_match("/^([0-9]{4})-([0-9]{2})-([0-9]{2})$/", $data[$fieldname], $m);
 
-				if ($result === true and checkdate($m[2], $m[3], $m[1])) {
+				if ($result == true and checkdate($m[2], $m[3], $m[1])) {
 					$errmsg = null;
 				} elseif ($result == false) {
 					$errmsg = "Not a date in the format yyyy-mm-dd";
