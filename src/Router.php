@@ -99,7 +99,7 @@ abstract class Router {
 
 		$this->routeCollector->$routeCollectorMethod($pathPattern, function() use ($responseMimeType, $controller) {
 			header("Content-Type: ".$responseMimeType."; charset=utf-8");
-			$this->runController($controller, func_get_args());
+			$this->runController($controller, array_map("rawurldecode", func_get_args()));
 		});
 	}
 
