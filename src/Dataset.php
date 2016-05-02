@@ -1,7 +1,7 @@
 <?php
 namespace WillV\Project;
 
-abstract class Form {
+abstract class Dataset {
 	use Trait_AbstractTemplate;
 	protected $fields;
 
@@ -43,22 +43,68 @@ abstract class Form {
 
 			if (!empty($fielddetails["allowedValues"]) and !in_array($data[$fieldname], $fielddetails["allowedValues"])) {
 				$foundErrors[$fieldname] = "This field should have one of the following values: {".join(", ", $fielddetails["allowedValues"])."}";
+				continue;
+			}
+
+			if (!empty($fielddetails["validateDateMySQL"])) {				
+				$result = preg_match("/^([0-9]{4})-([0-9]{2})-([0-9]{2})$/", $data[$fieldname], $m);
+
+				if ($result === true and checkdate($m[2], $m[3], $m[1])) {
+					$errmsg = null;
+				} elseif ($result == false) {
+					$errmsg = "Not a date in the format yyyy-mm-dd";
+				} else {
+					$errmsg = "Not a valid date";
+				}
+
+				if (!empty($errmsg)) {
+					$foundErrors[$fieldname] = $errmsg;
+					continue;
+				}
+			}
+
+			if (!empty($fielddetails["validateDateISO8601"])) {		
+				$result = preg_match("/^([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})(([+\-])([0-9]{2}):([0-9]{2}))?$/", $data[$fieldname], $m);
+
+				if ($result == false) {
+					$errmsg = "Not a date in the format yyyy-mm-ddThh:mm:ss(+/-hh:mm)";
+				} else {
+					if (empty($m[8])) {
+						$minutesOffset = 0;
+						$offsetIsPositive = true;
+					} else {
+						$minutesOffset = (($m[9] * 60) + $m[10]);
+						if ($m[8] == "-") {
+							$minutesOffset *= -1;
+						}
+					}
+			
+					if (strtotime($data[$fieldname]) != mktime($m[4], $m[5] + $minutesOffset, $m[6], $m[2], $m[3], $m[1])) {
+						$errmsg = "Not a valid date";
+					}
+				}
+
+				if (!empty($errmsg)) {
+					$foundErrors[$fieldname] = $errmsg;
+					continue;
+				}
 			}
 
 			if (!empty($fielddetails["customValidation"])) {
 				$result = call_user_func_array($fielddetails["customValidation"], array($data[$fieldname]));
 
 				if ($result === true) {
-					continue;
-				}
-
-				if (is_string($result)) {
+					$errmsg = null;
+				} elseif (is_string($result)) {
 					$errmsg = $result;
 				} else {
 					$errmsg = "This field is invalid";
 				}
 
-				$foundErrors[$fieldname] = $errmsg;
+				if (!empty($errmsg)) {
+					$foundErrors[$fieldname] = $errmsg;
+					continue;
+				}
 			}
 		}
 
