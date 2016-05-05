@@ -21,6 +21,8 @@ class PDOGenerator {
 	// The following function expects a PEAR logger
 	public function setLogger(\Log $logger) {
 		$this->logger = $logger;
+
+		return $this;
 	}
 
 	public function getPDO() {
