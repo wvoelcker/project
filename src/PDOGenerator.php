@@ -40,7 +40,7 @@ class PDOGenerator {
 				array(
 					\PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION
 				),
-				$logger
+				$this->logger
 			);
 		}
 
