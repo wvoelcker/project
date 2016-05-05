@@ -4,7 +4,8 @@
     "require": {
         "mustache/mustache": "^2.9",
         "phroute/phroute": "^2.1",
-        "swiftmailer/swiftmailer": "^5.4"
+        "swiftmailer/swiftmailer": "^5.4",
+        "phryneas/logged-pdo": "dev-master"
     },
     "autoload": {
         "psr-4": {
