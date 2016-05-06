@@ -18,10 +18,11 @@ class PDOGenerator {
 	}
 
 	public function setLogMode($logMode) {
+		$logNameSpace = "willv-project-pdo-generator";
 		if ($logMode === true) {
-			$this->logger = \Log::factory("console", "", "willv-project-pdo-generator");
+			$this->logger = \Log::factory("console", "", $logNameSpace);
 		} else {
-			$this->logger = \Log::factory("file", $logMode, "willv-project-pdo-generator");
+			$this->logger = \Log::factory("file", $logMode, $logNameSpace);
 		}
 
 		return $this;
