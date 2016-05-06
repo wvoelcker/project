@@ -17,10 +17,12 @@ class PDOGenerator {
 	private function __construct() {
 	}
 
-
-	// The following function expects a PEAR logger
-	public function setLogger(\Log $logger) {
-		$this->logger = $logger;
+	public function setLogMode($logMode) {
+		if ($logMode === true) {
+			$this->logger = \Log::factory("console", "", "willv-project-pdo-generator");
+		} else {
+			$this->logger = \Log::factory("file", $logMode, "willv-project-pdo-generator");
+		}
 
 		return $this;
 	}
