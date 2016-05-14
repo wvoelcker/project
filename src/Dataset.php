@@ -46,7 +46,7 @@ abstract class Dataset {
 				continue;
 			}
 
-			if (!empty($fielddetails["validateDateMySQL"])) {				
+			if (!empty($fielddetails["validateDateMySQL"])) {
 				$result = preg_match("/^([0-9]{4})-([0-9]{2})-([0-9]{2})$/", $data[$fieldname], $m);
 
 				if ($result == true and checkdate($m[2], $m[3], $m[1])) {
@@ -63,7 +63,7 @@ abstract class Dataset {
 				}
 			}
 
-			if (!empty($fielddetails["validateDateISO8601"])) {		
+			if (!empty($fielddetails["validateDateISO8601"])) {
 				$result = preg_match("/^([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})(([+\-])([0-9]{2}):([0-9]{2}))?$/", $data[$fieldname], $m);
 
 				if ($result == false) {
@@ -78,8 +78,8 @@ abstract class Dataset {
 							$minutesOffset *= -1;
 						}
 					}
-			
-					if (strtotime($data[$fieldname]) != mktime($m[4], $m[5] + $minutesOffset, $m[6], $m[2], $m[3], $m[1])) {
+
+					if (strtotime($data[$fieldname]) != gmmktime($m[4], $m[5] - $minutesOffset, $m[6], $m[2], $m[3], $m[1])) {
 						$errmsg = "Not a valid date";
 					}
 				}
