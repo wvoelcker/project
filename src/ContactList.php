@@ -14,7 +14,7 @@ abstract class ContactList {
 
 	public function getContact($contactName) {
 		if (!isset($this->contacts[$contactName])) {
-			throw new Exception("Contact '".$contactName."' not found");
+			throw new \Exception("Contact '".$contactName."' not found");
 		}
 		return $this->contacts[$contactName];
 	}
