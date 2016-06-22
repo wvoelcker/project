@@ -102,14 +102,22 @@ class View {
 		foreach ($this->filters as $key => $filterFunctions) {
 			if (isset($templateData[$key])) {
 				foreach ($filterFunctions as $filterFunction) {
-					$templateData[$key] = $filterFunction($this->templateData[$key]);
+					$newTemplateData = $filterFunction($this->templateData[$key]);
+					if ($newTemplateData === null) {
+						throw new \Exception("Please make sure that your filter functions return data of some sort (even if only an empty string; 'null' is out of bounds)");
+					}
+					$templateData[$key] = $newTemplateData;
 				}
 			}
 		}
 
 		// Apply global filters
 		foreach ($this->globalFilters as $filterFunction) {
-			$templateData = $filterFunction($templateData);
+			$newTemplateData = $filterFunction($templateData);
+			if (!is_array($newTemplateData)) {
+				throw new \Exception("Global filter functions should return an array");
+			}
+			$templateData = $newTemplateData;
 		}
 
 		// Render template
