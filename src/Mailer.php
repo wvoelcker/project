@@ -2,7 +2,7 @@
 namespace WillV\Project;
 
 abstract class Mailer {
-	private $message, $haveFromAddress = false, $haveBodyText = false;
+	private $message, $haveFromAddress = false, $bodyText = null, $bodyHtml = null;
 
 	static public function create() {
 		$className = get_called_class();
@@ -47,16 +47,25 @@ abstract class Mailer {
 
 	public function setBodyText($body) {
 		$this->message->setBody($body);
-		$this->haveBodyText = true;
+		$this->bodyText = $body;
 		return $this;
 	}
 
+	public function getBodyText() {
+		return $this->bodyText;
+	}
+
 	public function setBodyHTML($body) {
-		if (empty($this->haveBodyText)) {
+		if (empty($this->bodyText)) {
 			throw new \Exception("Please supply body text first");
 		}
 		$this->message->addPart($body, "text/html");
+		$this->bodyHtml = $body;
 		return $this;
+	}
+
+	public function getBodyHtml() {
+		return $this->bodyHtml;
 	}
 
 	public function embedImage($filename, $mimetype, $data) {
