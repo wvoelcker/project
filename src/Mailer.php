@@ -5,9 +5,8 @@ require_once __DIR__."/OmniTI_Mailer.php";
 abstract class Mailer {
 	private $bodyText = null, $bodyHtml = null;
 	private $fromAddress, $fromDisplayName, $recipients = array(), $subject;
-	private $attachedFiles = array();
+	private $embeddedImages = array(), $attachedFiles = array();
 	private $mailLibrary = "OmniTI";
-	private $message;
 
 	static public function create() {
 		$className = get_called_class();
@@ -77,39 +76,14 @@ abstract class Mailer {
 	}
 
 	public function embedImage($filename, $mimetype, $data) {
-		if (empty($this->message)) {
-			switch ($this->mailLibrary) {
-				case "swiftMail":
-					$this->addSwiftMailMessage();
-					break;
-				case "OmniTI":
-					$this->addOmniTIMessage();
-					break;
-				default:
-					throw new \Exception("Unknown mail library: ".$this->mailLibrary);
-			}
-		}
-		switch ($this->mailLibrary) {
-			case "swiftMail":
-				return $this->message->embed(new \Swift_Image($data, $filename, $mimetype));
-			case "OmniTI":
-				return "cid:".$this->message->embedImage($filename, $mimetype, $data);
-			default:
-				throw new \Exception("Unknown mail library: ".$this->mailLibrary);
-		}
+		$token = "wv-project-embedded-image-".count($this->embeddedImages);
+		$this->embeddedImages[$token] = array("filename" => $filename, "mimetype" => $mimetype, "data" => $data);
+		return $token;
 	}
 
-	public function attachFile($filename, $mimeType, $data) {
+	public function attachFile($filename, $mimetype, $data) {
 		$this->attachedFiles[] = array("filename" => $filename, "mimetype" => $mimetype, "data" => $data);
 		return $this;
-	}
-
-	private function addSwiftMailMessage() {
-		$this->message = \Swift_Message::newInstance();
-	}
-
-	private function addOmniTIMessage() {
-		$this->message = new \OmniTI_Mail_Mailer;
 	}
 
 	public function getBodyHtml() {
@@ -145,31 +119,33 @@ abstract class Mailer {
 	}
 
 	public function sendWithSwiftMail() {
-		if (empty($this->message)) {
-			$this->addSwiftMailMessage();
-		}
+		$message = \Swift_Message::newInstance();
 
-		$this->message->setFrom(array($this->fromAddress => $this->fromDisplayName));
+		$message->setFrom(array($this->fromAddress => $this->fromDisplayName));
 		foreach ($this->recipients as $address => $display) {
-			$this->message->addTo($address, $display);
-		}
-
-		$this->message->setSubject($this->subject);
-		$this->message->setBody($this->bodyText);
-		if (!empty($this->bodyHtml)) {
-			$this->message->addPart($this->bodyHtml, "text/html");
-		}
-
-		if (!empty($this->embeddedImages)) {
-			foreach ($this->embeddedImages as $embeddedImage) {
-				$this->message->embed(new \Swift_Image($embeddedImage["data"], $embeddedImage["filename"], $embeddedImage["mimetype"]));
-			}
+			$message->addTo($address, $display);
 		}
 
 		if (!empty($this->attachedFiles)) {
 			foreach ($this->attachedFiles as $attachedFile) {
-				$this->message->embed(new \Swift_Attachment($attachedFile["data"], $attachedFile["filename"], $attachedFile["mimetype"]));
+				$message->embed(new \Swift_Attachment($attachedFile["data"], $attachedFile["filename"], $attachedFile["mimetype"]));
 			}
+		}
+
+		$message->setSubject($this->subject);
+		$message->setBody($this->bodyText);
+
+		// NB should do this before adding the HTML body to the message, as the latter needs to be changed here
+		if (!empty($this->embeddedImages)) {
+			foreach ($this->embeddedImages as $token => $embeddedImage) {
+				$replacementToken = $message->embed(new \Swift_Image($embeddedImage["data"], $embeddedImage["filename"], $embeddedImage["mimetype"]));
+				$this->swapImageSRC($token, $replacementToken);
+			}
+		}
+
+		// NB HTML part must be added after embedding any images
+		if (!empty($this->bodyHtml)) {
+			$message->addPart($this->bodyHtml, "text/html");
 		}
 
 		// NB this uses the PHP mail() function - there are better transports available if required.
@@ -177,37 +153,49 @@ abstract class Mailer {
 		$transport = \Swift_MailTransport::newInstance();
 
 		$mailer = \Swift_Mailer::newInstance($transport);
-		return $mailer->send($this->message);
+		return $mailer->send($message);
 	}
 
 	public function sendWithOmniTI() {
-		if (empty($this->message)) {
-			$this->addOmniTIMessage();
-		}
+		$message = new \OmniTI_Mail_Mailer;
 		$charset = "utf-8";
 
-		$this->message->setFrom($this->fromAddress, $this->fromDisplayName, $charset);
+		$message->setFrom($this->fromAddress, $this->fromDisplayName, $charset);
 
 		foreach ($this->recipients as $address => $display) {
-			$this->message->addRecipient($address, $display, "To", null, $charset);
+			$message->addRecipient($address, $display, "To", null, $charset);
 		}
-		$this->message->setSubject($this->subject, $charset);
-		$this->message->setBodyText($this->bodyText, $charset);
-
-		if (!empty($this->bodyHtml)) {
-			$this->message->setBodyHTML($this->bodyHtml, $charset);
-		}
-
-		if (!empty($this->embeddedImages)) {
-			foreach ($this->embeddedImages as $embeddedImage) {
-				$this->mailer->embedImage($embeddedImage["filename"], $embeddedImage["mimetype"], $embeddedImage["data"]);
-			}
-		}
+		$message->setSubject($this->subject, $charset);
+		$message->setBodyText($this->bodyText, $charset);
 
 		if (!empty($this->attachedFiles)) {
 			throw new \Exception("Cannot yet attach files to OmniTI messages.  Please use SwiftMail, or an alternative if available.");
 		}
 
-		$this->message->send();
+		// NB should do this before adding the HTML body to the message, as the latter needs to be changed here
+		if (!empty($this->embeddedImages)) {
+			foreach ($this->embeddedImages as $token => $embeddedImage) {
+				$cid = $message->embedImage($embeddedImage["filename"], $embeddedImage["mimetype"], $embeddedImage["data"]);
+				$replacementToken = "cid:".$cid;
+				$this->swapImageSRC($token, $replacementToken);
+			}
+		}
+
+		// NB HTML part must be added after embedding any images
+		if (!empty($this->bodyHtml)) {
+			$message->setBodyHTML($this->bodyHtml, $charset);
+		}
+
+		$message->send();
+	}
+
+	private function swapImageSRC($old, $new) {
+		if (!empty($this->bodyHtml)) {
+			$this->bodyHtml = str_replace(
+				array("src='".$old."'", "src=\"".$old."\""),
+				array("src='".$new."'", "src=\"".$new."\""),
+				$this->bodyHtml
+			);
+		}
 	}
 }
