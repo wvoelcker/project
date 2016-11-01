@@ -72,6 +72,14 @@ abstract class Router {
 		$this->addRoute("post", $pathPattern, $controller, $responseMimeType);
 	}
 
+	public function hasRoute($httpMethod, $pathPattern) {
+		return $this->routeCollector->hasRoute($this->getRouteName($httpMethod, $pathPattern));
+	}
+
+	private function getRouteName($httpMethod, $pathPattern) {
+		return strtolower($httpMethod).":".$pathPattern;
+	}
+
 	private function addRoute($httpMethod, $pathPattern, $controller, $responseMimeType = null) {
 
 		// Allow supplying an array of patterns
@@ -97,7 +105,7 @@ abstract class Router {
 		// could potentially be a security or flakiness concern; therefore the validation above is important.
 		$routeCollectorMethod = $httpMethod;
 
-		$this->routeCollector->$routeCollectorMethod($pathPattern, function() use ($responseMimeType, $controller) {
+		$this->routeCollector->$routeCollectorMethod(array($pathPattern, $this->getRouteName($httpMethod, $pathPattern)), function() use ($responseMimeType, $controller) {
 			header("Content-Type: ".$responseMimeType."; charset=utf-8");
 			$this->runController($controller, array_map("rawurldecode", func_get_args()));
 		});
