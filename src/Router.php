@@ -72,6 +72,10 @@ abstract class Router {
 		$this->addRoute("post", $pathPattern, $controller, $responseMimeType);
 	}
 
+	protected function getOrPost($pathPattern, $controller, $responseMimeType = null) {
+		$this->addRoute(array("get", "post"), $pathPattern, $controller, $responseMimeType);
+	}
+
 	public function hasRoute($httpMethod, $pathPattern) {
 		return $this->routeCollector->hasRoute($this->getRouteName($httpMethod, $pathPattern));
 	}
@@ -81,6 +85,14 @@ abstract class Router {
 	}
 
 	private function addRoute($httpMethod, $pathPattern, $controller, $responseMimeType = null) {
+
+		// Allow supplying an array of http methods
+		if (is_array($httpMethod)) {
+			foreach ($httpMethod as $individualHttpMethod) {
+				$this->addRoute($individualHttpMethod, $pathPattern, $controller, $responseMimeType);
+			}
+			return;
+		}
 
 		// Allow supplying an array of patterns
 		if (is_array($pathPattern)) {
