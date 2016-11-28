@@ -27,7 +27,8 @@ abstract class Environment {
 				if (!file_exists($dataFile)) {
 					throw new \Exception("Data file not found: ".$dataFile);
 				}
-				$data += json_decode(file_get_contents($dataFile));
+
+				$data += json_decode(file_get_contents($dataFile), true);
 			}
 		}
 
