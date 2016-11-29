@@ -12,6 +12,7 @@ trait Trait_AbstractTemplate {
 		return $instance;
 	}
 
+	/* TODO:WV:20161129:Consider adding a 'final' keyword in the line below.  Would it break anything? */
 	private function __construct() {}
 
 	protected function preSetUp() {}
