@@ -40,7 +40,7 @@ class DomainObject {
 	public function getForPublic() {
 		$output = array();
 		foreach ($this->fields as $fieldName => $fieldDetails) {
-			if (empty($fieldDetails["visibility"]) or ($fieldDetails["visibility"] != "visible")) {
+			if (empty($fieldDetails["visibility"]) or ($fieldDetails["visibility"] != "public")) {
 				continue;
 			}
 			$value = (isset($this->data[$fieldName])?$this->data[$fieldName]:null);
