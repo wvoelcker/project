@@ -90,6 +90,15 @@ abstract class Dataset {
 				}
 			}
 
+			if (!empty($fielddetails["validateEmailAddress"])) {
+				$result = filter_var($data[$fieldname], FILTER_VALIDATE_EMAIL);
+
+				if (!$result) {
+					$foundErrors[$fieldname] = "Not a valid email address";
+					continue;
+				}
+			}
+
 			if (!empty($fielddetails["customValidation"])) {
 				$result = call_user_func_array($fielddetails["customValidation"], array($data[$fieldname]));
 
