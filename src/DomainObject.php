@@ -66,4 +66,13 @@ class DomainObject {
 		return $this;
 	}
 
+	public function setAnyIn($dataSet) {
+		foreach ($dataSet as $key => $value) {
+			if ($this->isValidField($key)) {
+				$this->set($key, $value);
+			}
+		}
+		return $this;
+	}
+
 }
