@@ -40,13 +40,10 @@ class DomainObject {
 	public function getForPublic() {
 		$output = array();
 		foreach ($this->fields as $fieldName => $fieldDetails) {
-			if (empty($fieldDetails["publicVersion"])) {
+			if (empty($fieldDetails["visibility"]) or ($fieldDetails["visibility"] != "visible")) {
 				continue;
 			}
 			$value = (isset($this->data[$fieldName])?$this->data[$fieldName]:null);
-			if (!empty($value) and !empty($fieldDetails["publicVersion"]["useBase64"])) {
-				$value = base64_encode($value);
-			}
 			$output[$fieldName] = $value;
 		}
 		return (object)$output;
