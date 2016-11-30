@@ -10,7 +10,7 @@ class DomainObject {
 
 		// Make sure the 'id' field is present, because the data-mapper class expects it
 		if (!isset($this->fields["id"])) {
-			$this->fields["id"] = array();
+			$this->fields["id"] = array("publicVersion" => true);
 		}
 
 		$validationErrors = array();
@@ -37,10 +37,29 @@ class DomainObject {
 		return $this->data[$key];
 	}
 
+	public function getForPublic() {
+		$output = array();
+		foreach ($this->fields as $fieldName => $fieldDetails) {
+			if (empty($fieldDetails["publicVersion"])) {
+				continue;
+			}
+			$value = (isset($this->data[$fieldName])?$this->data[$fieldName]:null);
+			if (!empty($value) and !empty($fieldDetails["publicVersion"]["useBase64"])) {
+				$value = base64_encode($value);
+			}
+			$output[$fieldName] = $value;
+		}
+		return (object)$output;
+	}
+
 	private function confirmValidField($fieldName) {
-		if (!isset($this->fields[$fieldName])) {
+		if (!$this->isValidField($fieldName)) {
 			throw new \Exception("Invalid field name");
 		}
+	}
+
+	public function isValidField($fieldName) {
+		return isset($this->fields[$fieldName]);
 	}
 
 	public function set($key, $value) {
