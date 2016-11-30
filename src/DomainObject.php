@@ -8,6 +8,11 @@ class DomainObject {
 	protected function postSetUp() {
 		$data = func_get_arg(0);
 
+		// Make sure the 'id' field is present, because the data-mapper class expects it
+		if (!isset($this->fields["id"])) {
+			$this->fields["id"] = array();
+		}
+
 		$validationErrors = array();
 		foreach ($this->fields as $fieldname => $fieldDetails) {
 			if (!empty($fieldDetails["required"]) and !isset($data[$fieldname])) {
