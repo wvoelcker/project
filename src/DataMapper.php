@@ -22,6 +22,28 @@ abstract class DataMapper {
 		return $object;
 	}
 
+
+	private function fetchRow($criterion) {
+		list($fieldName, $fieldValue) = each($criterion);
+
+		$placeHolder = $this->sanitiseForPlaceholder($fieldName);
+		$query = "SELECT * FROM `".$this->primaryDatabaseTable."` WHERE `".$fieldName."` = :".$placeHolder." LIMIT 1";
+
+		$statement = $this->prepareAndExecute($query, array($placeholder => $fieldValue));
+		$row = $statement->fetch(\PDO::FETCH_ASSOC);
+
+		return $row;
+	}
+
+	private function createFromRow($row) {
+		$objectData = $this->mapFieldsFromDatabase($row);
+
+		$objectClass = $this->primaryDomainObject;
+		$object = $objectClass::create($objectData);
+
+		return $object;
+	}
+
 	public function save($object) {
 
 		// Generate column names, values, and placeholders for SQL query
@@ -65,27 +87,6 @@ abstract class DataMapper {
 		$statement->execute($data);
 
 		return $statement;
-	}
-
-	private function fetchRow($criterion) {
-		list($fieldName, $fieldValue) = each($criterion);
-
-		$placeHolder = $this->sanitiseForPlaceholder($fieldName);
-		$query = "SELECT * FROM `".$this->primaryDatabaseTable."` WHERE `".$fieldName."` = :".$placeHolder." LIMIT 1";
-
-		$statement = $this->prepareAndExecute($query, array($placeholder => $fieldValue));
-		$row = $statement->fetch(\PDO::FETCH_ASSOC);
-
-		return $row;
-	}
-
-	private function createFromRow($row) {
-		$objectData = $this->mapFieldsFromDatabase($row);
-
-		$objectClass = $this->primaryDomainObject;
-		$object = $objectClass::create($objectData);
-
-		return $object;
 	}
 
 	abstract protected function mapFieldsFromDatabase($row);
