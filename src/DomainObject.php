@@ -24,4 +24,25 @@ class DomainObject {
 		$this->data = $data;
 	}
 
+	public function get($key) {
+		$this->confirmValidField($key);
+		if (!isset($this->data[$key])) {
+			return null;
+		}
+		return $this->data[$key];
+	}
+
+	private function confirmValidField($fieldName) {
+		if (!isset($this->fields[$fieldName])) {
+			throw new \Exception("Invalid field name");
+		}
+	}
+
+	public function set($key, $value) {
+		$this->confirmValidField($key);
+		$this->data[$key] = $value;
+
+		return $this;
+	}
+
 }
