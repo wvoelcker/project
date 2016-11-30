@@ -6,6 +6,7 @@ class JSONResponse {
 	private $validStatusCodesWithMessages = array(
 		200 => "OK",
 		400 => "Bad Request",
+		403 => "Forbidden",
 		500 => "Internal Server Error",
 	);
 
