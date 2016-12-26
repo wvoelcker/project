@@ -49,6 +49,7 @@ abstract class DataMapper {
 		// Generate column names, values, and placeholders for SQL query
 		$queryData = array();
 		$fieldsForSQL = array();
+
 		foreach ($this->mapFieldsToDatabase($object) as $fieldName => $fieldValue) {
 			$placeHolder = $this->sanitiseForPlaceholder($fieldValue);
 			$fieldsForSQL["`".$fieldName."`"] = ":".$placeHolder;
@@ -58,17 +59,24 @@ abstract class DataMapper {
 		$id = $object->get("id");
 
 		// Add modified and created dates
-		$now = gmdate("Y-m-d H:i:s");
-		$fieldsForSQL["updated_utc"] = $now;
+		$queryData["NOW"] = gmdate("Y-m-d H:i:s");
+		$fieldsForSQL["updated_utc"] = ":NOW";
 		if (empty($id)) {
-			$fieldsForSQL["created_utc"] = $now;
+			$fieldsForSQL["created_utc"] = ":NOW";
 		}
+
+		// Generate field names and values
+		$query = "";
+		foreach ($fieldsForSQL as $fieldName => $fieldValue) {
+			$query .= ", ".$fieldName."=".$fieldValue;
+		}
+		$query = substr($query, 2);
 
 		// Generate the rest of the SQL query
 		if (empty($id)) {
-			$query = "INSERT INTO `".$this->primaryDatabaseTable."` SET ".join(", ", $fieldsForSQL);
+			$query = "INSERT INTO `".$this->primaryDatabaseTable."` SET ".$query;
 		} else {
-			$query = "UPDATE `".$this->primaryDatabaseTable."` SET ".join(", ", $fieldsForSQL)." WHERE id = :id";
+			$query = "UPDATE `".$this->primaryDatabaseTable."` SET ".$query." WHERE id = :id";
 			$queryData["id"] = $object->get("id");
 		}
 
@@ -93,8 +101,11 @@ abstract class DataMapper {
 	abstract protected function mapFieldsToDatabase($object);
 
 	protected function sanitiseForPlaceholder($name) {
+		if ($name === null) {
+			return "NULL";
+		}
 		$sanitisedName = strtolower($name);
-		$sanitisedName = preg_replace("/[^a-z]/", "", $name);
+		$sanitisedName = preg_replace("/[^a-z]/", "", strtolower($name));
 		return $sanitisedName;
 	}
 
