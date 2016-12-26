@@ -26,8 +26,8 @@ abstract class DataMapper {
 	private function fetchRow($criterion) {
 		list($fieldName, $fieldValue) = each($criterion);
 
-		$placeHolder = $this->sanitiseForPlaceholder($fieldName);
-		$query = "SELECT * FROM `".$this->primaryDatabaseTable."` WHERE `".$fieldName."` = :".$placeHolder." LIMIT 1";
+		$placeholder = $this->sanitiseForPlaceholder($fieldName);
+		$query = "SELECT * FROM `".$this->primaryDatabaseTable."` WHERE `".$fieldName."` = :".$placeholder." LIMIT 1";
 
 		$statement = $this->prepareAndExecute($query, array($placeholder => $fieldValue));
 		$row = $statement->fetch(\PDO::FETCH_ASSOC);
@@ -51,9 +51,9 @@ abstract class DataMapper {
 		$fieldsForSQL = array();
 
 		foreach ($this->mapFieldsToDatabase($object) as $fieldName => $fieldValue) {
-			$placeHolder = $this->sanitiseForPlaceholder($fieldValue);
-			$fieldsForSQL["`".$fieldName."`"] = ":".$placeHolder;
-			$queryData[$placeHolder] = $fieldValue;
+			$placeholder = $this->sanitiseForPlaceholder($fieldValue);
+			$fieldsForSQL["`".$fieldName."`"] = ":".$placeholder;
+			$queryData[$placeholder] = $fieldValue;
 		}
 
 		$id = $object->get("id");
