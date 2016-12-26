@@ -1,7 +1,7 @@
 <?php
 namespace WillV\Project;
 
-class DomainObject {
+abstract class DomainObject {
 	use Trait_AbstractTemplate;
 	protected $data = array(), $fields = array();
 
