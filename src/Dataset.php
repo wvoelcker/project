@@ -100,7 +100,7 @@ abstract class Dataset {
 			}
 
 			if (!empty($fielddetails["customValidation"])) {
-				$result = call_user_func_array($fielddetails["customValidation"], array($data[$fieldname]));
+				$result = call_user_func_array($fielddetails["customValidation"], array($data[$fieldname], $data));
 
 				if ($result === true) {
 					$errmsg = null;
