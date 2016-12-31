@@ -37,7 +37,6 @@ abstract class DataMapper {
 
 	private function createFromRow($row) {
 		$objectData = $this->mapFieldsFromDatabase($row);
-
 		$objectClass = $this->primaryDomainObject;
 		$object = $objectClass::create($objectData);
 
@@ -105,7 +104,12 @@ abstract class DataMapper {
 			return "NULL";
 		}
 		$sanitisedName = strtolower($name);
-		$sanitisedName = preg_replace("/[^a-z]/", "", strtolower($name));
+		$sanitisedName = str_replace(
+			array("0", "1", "2", "3", "4", "5", "6", "7", "8", "9"),
+			array("zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"),
+			$sanitisedName
+		);
+		$sanitisedName = preg_replace("/[^a-z]/", "", $sanitisedName);
 		return $sanitisedName;
 	}
 
