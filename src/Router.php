@@ -68,12 +68,33 @@ abstract class Router {
 		$this->addRoute("get", $pathPattern, $controller, $responseMimeType);
 	}
 
+	protected function getOrOptions($pathPattern, $controller, $responseMimeType = null) {
+		$this->get($pathPattern, $controller, $responseMimeType);
+		$this->allowOptions($pathPattern, $controller, $responseMimeType);
+	}
+
+	protected function allowOptions($pathPattern, $controller, $responseMimeType = null) {
+		if (!$this->hasRoute("options", $pathPattern)) {
+			$this->addRoute("options", $pathPattern, $controller, $responseMimeType);
+		}
+	}
+
 	protected function post($pathPattern, $controller, $responseMimeType = null) {
 		$this->addRoute("post", $pathPattern, $controller, $responseMimeType);
 	}
 
+	protected function postOrOptions($pathPattern, $controller, $responseMimeType = null) {
+		$this->post($pathPattern, $controller, $responseMimeType);
+		$this->allowOptions($pathPattern, $controller, $responseMimeType);
+	}
+
 	protected function getOrPost($pathPattern, $controller, $responseMimeType = null) {
 		$this->addRoute(array("get", "post"), $pathPattern, $controller, $responseMimeType);
+	}
+
+	protected function getOrPostOrOptions($pathPattern, $controller, $responseMimeType = null) {
+		$this->getOrPost($pathPattern, $controller, $responseMimeType);
+		$this->allowOptions($pathPattern, $controller, $responseMimeType);
 	}
 
 	public function hasRoute($httpMethod, $pathPattern) {
@@ -104,7 +125,7 @@ abstract class Router {
 
 		// NB this validation is important as the $httpMethod is used to generate a
 		// PHP method name to call on $this->routeCollector (see below)
-		$validMethods = array("get", "head", "post", "put", "delete");
+		$validMethods = array("get", "head", "post", "put", "delete", "options");
 		if (!in_array($httpMethod, $validMethods)) {
 			throw new Exception("Invalid HTTP method; expected one of the following: {".join(", ", $validMethods)."}");
 		}
