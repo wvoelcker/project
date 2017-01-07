@@ -35,12 +35,58 @@ abstract class DataMapper {
 		return $row;
 	}
 
+	public function createPage($sortCol, $sortDir, $offset, $maxResults) {
+		$sortDir = strtoupper($sortDir);
+		if (!in_array($sortDir, array("ASC", "DESC"))) {
+			throw new \Exception("Invalid sort direction (should be 'asc' or 'desc')");
+		}
+		if (!ctype_digit((string)$offset)) {
+			throw new \Exception("Invalid offset");
+		}
+		if (!ctype_digit((string)$maxResults)) {
+			throw new \Exception("Invalid maximum results");
+		}
+		$query = "SELECT * FROM `".$this->primaryDatabaseTable."` ORDER BY `".$sortCol."` ".$sortDir." LIMIT ".$offset.", ".$maxResults;
+
+		$statement = $this->prepareAndExecute($query, array());
+		$rows = $statement->fetchAll(\PDO::FETCH_ASSOC);
+
+		$output = array();
+		foreach ($rows as $row) {
+			$output[] = $this->createFromRow($row);
+		}
+
+		return $output;
+	}
+
 	private function createFromRow($row) {
 		$objectData = $this->mapFieldsFromDatabase($row);
 		$objectClass = $this->primaryDomainObject;
 		$object = $objectClass::create($objectData);
 
 		return $object;
+	}
+
+	public function getDateCreated($object) {
+		$id = $object->get("id");
+
+		if (empty($id)) {
+			return null;
+		}
+
+		$placeholder = $this->sanitiseForPlaceholder($fieldName);
+		$query = "SELECT created_utc FROM `".$this->primaryDatabaseTable."` WHERE id = :id LIMIT 1";
+
+		$statement = $this->prepareAndExecute($query, array("id" => $id));
+		$row = $statement->fetch(\PDO::FETCH_ASSOC);
+
+		if (empty($row)) {
+			return null;
+		}
+
+		$date = new \DateTime($row["created_utc"], new \DateTimeZone("UTC"));
+
+		return $date;
 	}
 
 	public function save($object) {
