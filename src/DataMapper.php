@@ -10,8 +10,8 @@ abstract class DataMapper {
 		$this->db = $db;
 	}
 
-	public function createSingle($criterion) {
-		$row = $this->fetchRow($criterion);
+	public function createSingle($criteria) {
+		$row = $this->fetchRow($criteria);
 
 		if (empty($row)) {
 			return null;
@@ -23,13 +23,38 @@ abstract class DataMapper {
 	}
 
 
-	private function fetchRow($criterion) {
-		list($fieldName, $fieldValue) = each($criterion);
+	private function fetchRow($criteria) {
 
-		$placeholder = $this->sanitiseForPlaceholder($fieldName);
-		$query = "SELECT * FROM `".$this->primaryDatabaseTable."` WHERE `".$fieldName."` = :".$placeholder." LIMIT 1";
+		$whereCriteria = array();
+		$queryData = array();
+		foreach ($criteria as $fieldName => $fieldValue) {
 
-		$statement = $this->prepareAndExecute($query, array($placeholder => $fieldValue));
+			if (is_scalar($fieldValue)) {
+				$placeholder = $this->sanitiseForPlaceholder($fieldName);
+				$whereCriteria[] = "`".$fieldName."` = :".$placeholder;
+				$queryData[$placeholder] = $fieldValue;
+
+			} elseif (is_array($fieldValue)) {
+
+				switch ($fieldValue["type"]) {
+					case "is null":
+						$whereCriteria[] = "`".$fieldName."` IS NULL";
+						break;
+					case "is not null":
+						$whereCriteria[] = "`".$fieldName."` IS NOT NULL";
+						break;
+					default:
+						throw new \Exception("Unknown field value type");
+				}
+
+			} else {
+				throw new \Exception("Invalid field value");
+			}
+		}
+
+		$query = "SELECT * FROM `".$this->primaryDatabaseTable."` WHERE (".join(") AND (", $whereCriteria).") LIMIT 1";
+
+		$statement = $this->prepareAndExecute($query, $queryData);
 		$row = $statement->fetch(\PDO::FETCH_ASSOC);
 
 		return $row;
