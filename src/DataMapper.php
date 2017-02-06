@@ -22,6 +22,11 @@ abstract class DataMapper {
 		return $object;
 	}
 
+	public function delete($obj) {
+		$whereClauseData = $this->generateWhereClauseData(array("id" => $obj->get("id")));
+		$query = "DELETE FROM `".$this->primaryDatabaseTable."` ".$this->generateWhereClause($whereClauseData["whereCriteria"]);
+		$this->prepareAndExecute($query, $whereClauseData["queryData"]);
+	}
 
 	private function fetchRow($criteria) {
 		$whereClauseData = $this->generateWhereClauseData($criteria);
