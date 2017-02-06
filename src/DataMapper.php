@@ -23,7 +23,11 @@ abstract class DataMapper {
 	}
 
 	public function delete($obj) {
-		$whereClauseData = $this->generateWhereClauseData(array("id" => $obj->get("id")));
+		$id = $obj->get("id");
+		if (empty($id)) {
+			throw new \Exception("Cannot delete objects with no ID");
+		}
+		$whereClauseData = $this->generateWhereClauseData(array("id" => $id));
 		$query = "DELETE FROM `".$this->primaryDatabaseTable."` ".$this->generateWhereClause($whereClauseData["whereCriteria"]);
 		$this->prepareAndExecute($query, $whereClauseData["queryData"]);
 	}
