@@ -24,7 +24,23 @@ abstract class DataMapper {
 
 
 	private function fetchRow($criteria) {
+		$whereClauseData = $this->generateWhereClauseData($criteria);
 
+		$query = "SELECT * FROM `".$this->primaryDatabaseTable."` ".$this->generateWhereClause($whereClauseData["whereCriteria"])." LIMIT 1";
+		$statement = $this->prepareAndExecute($query, $whereClauseData["queryData"]);
+		$row = $statement->fetch(\PDO::FETCH_ASSOC);
+
+		return $row;
+	}
+
+	private function generateWhereClause($whereCriteria) {
+		if (empty($whereCriteria)) {
+			return array();
+		}
+		return "WHERE (".join(") AND (", $whereCriteria).")";
+	}
+
+	private function generateWhereClauseData($criteria) {
 		$whereCriteria = array();
 		$queryData = array();
 		foreach ($criteria as $fieldName => $fieldValue) {
@@ -52,15 +68,10 @@ abstract class DataMapper {
 			}
 		}
 
-		$query = "SELECT * FROM `".$this->primaryDatabaseTable."` WHERE (".join(") AND (", $whereCriteria).") LIMIT 1";
-
-		$statement = $this->prepareAndExecute($query, $queryData);
-		$row = $statement->fetch(\PDO::FETCH_ASSOC);
-
-		return $row;
+		return array("whereCriteria" => $whereCriteria, "queryData" => $queryData);
 	}
 
-	public function createPage($sortCol, $sortDir, $offset, $maxResults) {
+	public function createPage($sortCol, $sortDir, $offset, $maxResults, $criteria = array()) {
 		$sortDir = strtoupper($sortDir);
 		if (!in_array($sortDir, array("ASC", "DESC"))) {
 			throw new \Exception("Invalid sort direction (should be 'asc' or 'desc')");
@@ -71,9 +82,11 @@ abstract class DataMapper {
 		if (!ctype_digit((string)$maxResults)) {
 			throw new \Exception("Invalid maximum results");
 		}
-		$query = "SELECT * FROM `".$this->primaryDatabaseTable."` ORDER BY `".$sortCol."` ".$sortDir." LIMIT ".$offset.", ".$maxResults;
 
-		$statement = $this->prepareAndExecute($query, array());
+		$whereClauseData = $this->generateWhereClauseData($criteria);
+		$query = "SELECT * FROM `".$this->primaryDatabaseTable."` ".$this->generateWhereClause($whereClauseData["whereCriteria"])." ORDER BY `".$sortCol."` ".$sortDir." LIMIT ".$offset.", ".$maxResults;
+
+		$statement = $this->prepareAndExecute($query, $whereClauseData["queryData"]);
 		$rows = $statement->fetchAll(\PDO::FETCH_ASSOC);
 
 		$output = array();
