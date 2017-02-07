@@ -44,7 +44,7 @@ abstract class DataMapper {
 
 	private function generateWhereClause($whereCriteria) {
 		if (empty($whereCriteria)) {
-			return array();
+			return "";
 		}
 		return "WHERE (".join(") AND (", $whereCriteria).")";
 	}
