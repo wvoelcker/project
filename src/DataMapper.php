@@ -52,6 +52,7 @@ abstract class DataMapper {
 	private function generateWhereClauseData($criteria) {
 		$whereCriteria = array();
 		$queryData = array();
+
 		foreach ($criteria as $fieldName => $fieldValue) {
 
 			if (is_scalar($fieldValue)) {
@@ -121,7 +122,6 @@ abstract class DataMapper {
 			return null;
 		}
 
-		$placeholder = $this->sanitiseForPlaceholder($fieldName);
 		$query = "SELECT created_utc FROM `".$this->primaryDatabaseTable."` WHERE id = :id LIMIT 1";
 
 		$statement = $this->prepareAndExecute($query, array("id" => $id));
