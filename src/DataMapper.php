@@ -22,6 +22,16 @@ abstract class DataMapper {
 		return $object;
 	}
 
+	public function count($criteria = array()) {
+		$whereClauseData = $this->generateWhereClauseData($criteria);
+
+		$query = "SELECT COUNT(*) as num FROM `".$this->primaryDatabaseTable."` ".$this->generateWhereClause($whereClauseData["whereCriteria"]);
+		$statement = $this->prepareAndExecute($query, $whereClauseData["queryData"]);
+		$row = $statement->fetch(\PDO::FETCH_ASSOC);
+
+		return $row["num"];
+	}
+
 	public function delete($obj) {
 		$id = $obj->get("id");
 		if (empty($id)) {
