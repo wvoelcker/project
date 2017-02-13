@@ -36,6 +36,11 @@ abstract class Dataset {
 				continue;
 			}
 
+			// Stop validating here if not provided
+			if (!isset($data[$fieldname])) {
+				continue;
+			}
+
 			$validators = array();
 
 			if (!empty($fielddetails["allowedValues"])) {
@@ -72,6 +77,7 @@ abstract class Dataset {
 
 			foreach ($validators as $validator) {
 				$result = $this->doValidationStep($validator, $data, $fieldname, $foundErrors);
+
 				if ($result === false) {
 					continue 2;
 				}
@@ -156,7 +162,16 @@ abstract class Dataset {
 	}
 
 	private function doValidationStep($validationFunction, $data, $fieldname, &$foundErrors) {
-		$result = call_user_func_array($validationFunction, array($data[$fieldname], $data));
+		$validatorArguments = array(
+			$data[$fieldname]
+		);
+
+		// Apart from in-built PHP functions, pass in the whole data-set as well
+		// (don't do it for in-built functions, to avoid PHP 'too many arguments warning)
+		if (!is_string($validationFunction)) {
+			$validatorArguments[] = $data;
+		}
+		$result = call_user_func_array($validationFunction, $validatorArguments);
 
 		if ($result === true) {
 			return true;
