@@ -10,6 +10,10 @@ abstract class DataMapper {
 		$this->db = $db;
 	}
 
+	public function findById($id) {
+		return $this->createSingle(array("id" => $id));
+	}
+
 	public function createSingle($criteria) {
 		$row = $this->fetchRow($criteria);
 
