@@ -1,6 +1,7 @@
 <?php
 namespace WillV\Project;
 
+// TODO:WV:20170213:This has been refactored and needs to be unit tested
 abstract class Dataset {
 	use Trait_AbstractTemplate;
 	protected $fields;
@@ -48,6 +49,7 @@ abstract class Dataset {
 					if (!in_array($value, $fielddetails["allowedValues"])) {
 						return "This field should have one of the following values: {".join(", ", $fielddetails["allowedValues"])."}";
 					}
+					return true;
 				};
 			}
 
