@@ -111,7 +111,7 @@ abstract class Dataset {
 		$result = preg_match("/^([0-9]{2})\/([0-9]{2})\/([0-9]{4})$/", $value, $m);
 
 		if ($result == true) {
-			if (checkdate($m[2], $m[3], $m[1])) {
+			if (checkdate($m[2], $m[1], $m[3])) {
 				return true;
 			} else {
 				return "Not a valid date";
