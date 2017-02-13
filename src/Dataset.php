@@ -46,6 +46,10 @@ abstract class Dataset {
 				};
 			}
 
+			if (!empty($fielddetails["validateDateUK"])) {
+				$validators[] = array($this, "validateDateUK");
+			}
+
 			if (!empty($fielddetails["validateDateMySQL"])) {
 				$validators[] = array($this, "validateDateMySQL");
 			}
@@ -75,6 +79,20 @@ abstract class Dataset {
 
 		// Return a boolean flag to show the result of the validation
 		return empty($foundErrors);
+	}
+
+	protected function validateDateUK($value) {
+		$result = preg_match("/^([0-9]{2})\/([0-9]{2})\/([0-9]{4})$/", $value, $m);
+
+		if ($result == true) {
+			if (checkdate($m[2], $m[3], $m[1])) {
+				return true;
+			} else {
+				return "Not a valid date";
+			}
+		}
+
+		return "Not a date in the format dd-mm-yyyy";
 	}
 
 	protected function validateDateMySQL($value) {
