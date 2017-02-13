@@ -46,6 +46,10 @@ abstract class Dataset {
 				};
 			}
 
+			if (!empty($fielddetails["validate12HrTime"])) {
+				$validators[] = array($this, "validate12HrTime");
+			}
+
 			if (!empty($fielddetails["validateDateUK"])) {
 				$validators[] = array($this, "validateDateUK");
 			}
@@ -79,6 +83,20 @@ abstract class Dataset {
 
 		// Return a boolean flag to show the result of the validation
 		return empty($foundErrors);
+	}
+
+	protected function validate12HrTime($value) {
+		if (!preg_match("/^([0-9]+):([0-9]+)([ap]m)$/", $time, $m)) {
+			return "Expected a time in the format h:m(am/pm)";
+		}
+		if ($m[1] > 12) {
+			return "The hour cannot be more than 12";
+		}
+		if ($m[2] > 59) {
+			return "The number of minutes cannot be more than 59";
+		}
+
+		return true;
 	}
 
 	protected function validateDateUK($value) {
