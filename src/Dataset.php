@@ -6,6 +6,10 @@ abstract class Dataset {
 	use Trait_AbstractTemplate;
 	protected $fields;
 
+	const RGX_UKDATE = "/^([0-9]{2})\/([0-9]{2})\/([0-9]{4})$/";
+	const RGX_MYSQLDATE = "/^([0-9]{4})-([0-9]{2})-([0-9]{2})$/";
+	const RGX_ISO8601DATE = "/^([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})(([+\-])([0-9]{2}):([0-9]{2}))?$/";
+
 	public function getFields() {
 		return $this->fields;
 	}
@@ -108,7 +112,7 @@ abstract class Dataset {
 	}
 
 	protected function validateDateUK($value) {
-		$result = preg_match("/^([0-9]{2})\/([0-9]{2})\/([0-9]{4})$/", $value, $m);
+		$result = preg_match(self::RGX_UKDATE, $value, $m);
 
 		if ($result == true) {
 			if (checkdate($m[2], $m[1], $m[3])) {
@@ -122,7 +126,7 @@ abstract class Dataset {
 	}
 
 	protected function validateDateMySQL($value) {
-		$result = preg_match("/^([0-9]{4})-([0-9]{2})-([0-9]{2})$/", $value, $m);
+		$result = preg_match(self::RGX_MYSQLDATE, $value, $m);
 
 		if ($result == true) {
 			if (checkdate($m[2], $m[3], $m[1])) {
@@ -136,7 +140,7 @@ abstract class Dataset {
 	}
 
 	protected function validateDateISO8601($value) {
-		$result = preg_match("/^([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})(([+\-])([0-9]{2}):([0-9]{2}))?$/", $value, $m);
+		$result = preg_match(self::RGX_ISO8601DATE, $value, $m);
 
 		if ($result == false) {
 			$errmsg = "Not a date in the format yyyy-mm-ddThh:mm:ss(+/-hh:mm)";
