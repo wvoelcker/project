@@ -43,7 +43,16 @@ abstract class DomainObject {
 			if (empty($fieldDetails["visibility"]) or ($fieldDetails["visibility"] != "public")) {
 				continue;
 			}
-			$value = (isset($this->data[$fieldName])?$this->data[$fieldName]:null);
+
+			if (!isset($this->data[$fieldName])) {
+				$value = null;
+			} else {
+				$value = $this->data[$fieldName];
+				if (isset($fieldDetails["formatForPublic"])) {
+					$value = call_user_func_array($fieldDetails["formatForPublic"], array($value));
+				}
+			}
+
 			$output[$fieldName] = $value;
 		}
 		return (object)$output;
