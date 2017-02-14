@@ -167,6 +167,16 @@ abstract class Dataset {
 		return true;
 	}
 
+	protected function validateEmailAddress($value) {
+		$result = filter_var($value, FILTER_VALIDATE_EMAIL);
+
+		if (!$result) {
+			return "Not a valid email address";
+		}
+
+		return true;
+	}
+
 	private function doValidationStep($validationFunction, $data, $fieldname, &$foundErrors) {
 		$validatorArguments = array(
 			$data[$fieldname]
@@ -189,16 +199,6 @@ abstract class Dataset {
 
 		$foundErrors[$fieldname] = $errmsg;
 		return false;
-	}
-
-	protected function validateEmailAddress($value) {
-		$result = filter_var($data[$fieldname], FILTER_VALIDATE_EMAIL);
-
-		if (!$result) {
-			return "Not a valid email address";
-		}
-
-		return true;
 	}
 
 }
