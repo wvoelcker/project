@@ -60,7 +60,7 @@ abstract class DomainObject {
 
 	private function confirmValidField($fieldName) {
 		if (!$this->isValidField($fieldName)) {
-			throw new \Exception("Invalid field name");
+			throw new \Exception("Invalid field name '".$fieldName."'");
 		}
 	}
 
