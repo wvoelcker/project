@@ -69,8 +69,9 @@ abstract class DataMapper {
 
 		foreach ($criteria as $fieldName => $fieldValue) {
 
+			$placeholder = $this->sanitiseForPlaceholder($fieldName);
+
 			if (is_scalar($fieldValue)) {
-				$placeholder = $this->sanitiseForPlaceholder($fieldName);
 				$whereCriteria[] = "`".$fieldName."` = :".$placeholder;
 				$queryData[$placeholder] = $fieldValue;
 
@@ -83,12 +84,20 @@ abstract class DataMapper {
 					case "is not null":
 						$whereCriteria[] = "`".$fieldName."` IS NOT NULL";
 						break;
+					case "less than":
+						$whereCriteria[] = "`".$fieldName."` < :".$placeholder;
+						$queryData[$placeholder] = $fieldValue["value"];
+						break;
+					case "greater than":
+						$whereCriteria[] = "`".$fieldName."` > :".$placeholder;
+						$queryData[$placeholder] = $fieldValue["value"];
+						break;
 					default:
 						throw new \Exception("Unknown field value type");
 				}
 
 			} else {
-				throw new \Exception("Invalid field value");
+				throw new \Exception("Invalid field value ".$fieldName." ".$fieldValue);
 			}
 		}
 
