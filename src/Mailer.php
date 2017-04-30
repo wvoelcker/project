@@ -6,7 +6,7 @@ abstract class Mailer {
 	private $bodyText = null, $bodyHtml = null;
 	private $fromAddress, $fromDisplayName, $recipients = array(), $subject;
 	private $embeddedImages = array(), $attachedFiles = array();
-	private $mailLibrary = "OmniTI";
+	private $mailLibrary = "OmniTI", $smtpDetails = array();
 
 	static public function create() {
 		$className = get_called_class();
@@ -34,6 +34,10 @@ abstract class Mailer {
 
 	public function setMailLibrary($newLibrary) {
 		$this->mailLibrary = $newLibrary;
+	}
+
+	public function setSmtpDetails($smtpDetails) {
+		$this->smtpDetails = $smtpDetails;
 	}
 
 	public function setFrom($address, $display = null) {
@@ -148,9 +152,32 @@ abstract class Mailer {
 			$message->addPart($this->bodyHtml, "text/html");
 		}
 
-		// NB this uses the PHP mail() function - there are better transports available if required.
-		// see http://swiftmailer.org/docs/sending.html
-		$transport = \Swift_MailTransport::newInstance();
+		// Find a suitable transport
+		// More info: http://swiftmailer.org/docs/sending.html
+		if (empty($this->smtpDetails)) {
+			$transport = \Swift_MailTransport::newInstance();
+		} else {
+
+			if (empty($this->smtpDetails["server"])) {
+				throw new \Exception("No server");
+			}
+
+			if (empty($this->smtpDetails["port"])) {
+				throw new \Exception("No port");
+			}
+
+			if (!empty($this->smtpDetails["port"]) and !in_array($this->smtpDetails["security"], array("ssl", "tls"))) {
+				throw new \Exception("Security should be SSL, TLS, or an empty value (for none)");
+			}
+
+			$security = (empty($this->smtpDetails["security"])?null:$this->smtpDetails["security"]);
+			$transport = Swift_SmtpTransport::newInstance($this->smtpDetails["server"], $this->smtpDetails["port"], $security);
+
+			if (!empty($this->smtpDetails["username"]) and !empty($this->smtpDetails["password"])) {
+				$transport->setUsername($this->smtpDetails["username"]);
+				$transport->setPassword($this->smtpDetails["password"]);
+			}
+		}
 
 		$mailer = \Swift_Mailer::newInstance($transport);
 		return $mailer->send($message);
@@ -170,6 +197,10 @@ abstract class Mailer {
 
 		if (!empty($this->attachedFiles)) {
 			throw new \Exception("Cannot yet attach files to OmniTI messages.  Please use SwiftMail, or an alternative if available.");
+		}
+
+		if (!empty($this->smtpDetails)) {
+			throw new \Exception("Cannot yet send OmniTI messages via SMTP.  Please use SwiftMail, or an alternative if available.");
 		}
 
 		// NB should do this before adding the HTML body to the message, as the latter needs to be changed here
