@@ -171,7 +171,7 @@ abstract class Mailer {
 			}
 
 			$security = (empty($this->smtpDetails["security"])?null:$this->smtpDetails["security"]);
-			$transport = Swift_SmtpTransport::newInstance($this->smtpDetails["server"], $this->smtpDetails["port"], $security);
+			$transport = \Swift_SmtpTransport::newInstance($this->smtpDetails["server"], $this->smtpDetails["port"], $security);
 
 			if (!empty($this->smtpDetails["username"]) and !empty($this->smtpDetails["password"])) {
 				$transport->setUsername($this->smtpDetails["username"]);
