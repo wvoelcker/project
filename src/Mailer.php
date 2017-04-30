@@ -166,8 +166,8 @@ abstract class Mailer {
 				throw new \Exception("No port");
 			}
 
-			if (!empty($this->smtpDetails["port"]) and !in_array($this->smtpDetails["security"], array("ssl", "tls"))) {
-				throw new \Exception("Security should be SSL, TLS, or an empty value (for none)");
+			if (empty($this->smtpDetails["security"]) or !in_array($this->smtpDetails["security"], array("ssl", "tls"))) {
+				throw new \Exception("Security should be SSL or TLS");
 			}
 
 			$security = (empty($this->smtpDetails["security"])?null:$this->smtpDetails["security"]);
