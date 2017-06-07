@@ -137,6 +137,8 @@ abstract class Mailer {
 		}
 
 		$message->setSubject($this->subject);
+
+		// Note that this part has to be added via addPart (not "setBody") or Swiftmail will not render the email correctly in the case that it includes embedded images
 		$message->addPart($this->bodyText, "text/plain");
 
 
