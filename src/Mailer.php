@@ -137,7 +137,8 @@ abstract class Mailer {
 		}
 
 		$message->setSubject($this->subject);
-		$message->setBody($this->bodyText);
+		$message->addPart($this->bodyText, "text/plain");
+
 
 		// NB should do this before adding the HTML body to the message, as the latter needs to be changed here
 		if (!empty($this->embeddedImages)) {
