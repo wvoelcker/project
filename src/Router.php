@@ -78,6 +78,14 @@ abstract class Router {
 		$this->addRoute("post", $pathPattern, $controller, $responseMimeType);
 	}
 
+	protected function put($pathPattern, $controller, $responseMimeType = null) {
+		$this->addRoute("put", $pathPattern, $controller, $responseMimeType);
+	}
+
+	protected function delete($pathPattern, $controller, $responseMimeType = null) {
+		$this->addRoute("delete", $pathPattern, $controller, $responseMimeType);
+	}
+
 	protected function getOrPost($pathPattern, $controller, $responseMimeType = null) {
 		$this->addRoute(array("get", "post"), $pathPattern, $controller, $responseMimeType);
 	}
