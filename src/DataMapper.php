@@ -178,10 +178,11 @@ abstract class DataMapper {
 		}
 
 		// Add modified and created dates
-		// Use IFNULL to avoid changing the created-field on update
 		$queryData["NOW"] = gmdate("Y-m-d H:i:s");
 		$fieldsForSQL["updated_utc"] = ":NOW";
-		$fieldsForSQL["created_utc"] = "IFNULL(created_utc, :NOW)";
+		if (empty($id)) {
+			$fieldsForSQL["created_utc"] = ":NOW";
+		}
 
 		// Generate field names and values
 		$query = "";
