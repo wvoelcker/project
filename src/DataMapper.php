@@ -236,5 +236,4 @@ abstract class DataMapper {
 		$sanitisedName = preg_replace("/[^a-z]/", "", $sanitisedName);
 		return $sanitisedName;
 	}
-
 }
