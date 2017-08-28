@@ -227,6 +227,9 @@ abstract class DataMapper {
 		if ($name === null) {
 			return "NULL";
 		}
+		if ($name === "") {
+			return "emptystring";
+		}
 		$sanitisedName = strtolower($name);
 		$sanitisedName = str_replace(
 			array("0", "1", "2", "3", "4", "5", "6", "7", "8", "9"),
