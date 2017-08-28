@@ -171,12 +171,12 @@ abstract class DataMapper {
 			$queryData[$placeholder] = $fieldValue;
 		}
 
-		$id = $object->get("id");
-
 		// Add modified and created dates
 		$queryData["NOW"] = gmdate("Y-m-d H:i:s");
 		$fieldsForSQL["updated_utc"] = ":NOW";
-		if (empty($id)) {
+		$id = $object->get("id");
+		$isInsert = (empty($id) or $forceInsert);
+		if ($isInsert) {
 			$fieldsForSQL["created_utc"] = ":NOW";
 		}
 
@@ -188,7 +188,7 @@ abstract class DataMapper {
 		$query = substr($query, 2);
 
 		// Generate the rest of the SQL query
-		if (empty($id) or $forceInsert) {
+		if ($isInsert) {
 			$query = "INSERT INTO `".$this->primaryDatabaseTable."` SET ".$query;
 		} else {
 			$query = "UPDATE `".$this->primaryDatabaseTable."` SET ".$query." WHERE id = :id";
