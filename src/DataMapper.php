@@ -161,17 +161,21 @@ abstract class DataMapper {
 
 	public function save($object) {
 
+		// Work out if the object has an ID yet (this will help in constructing the query)
+		$id = $object->get("id");
+
 		// Generate column names, values, and placeholders for SQL query
 		$queryData = array();
 		$fieldsForSQL = array();
-
 		foreach ($this->mapFieldsToDatabase($object) as $fieldName => $fieldValue) {
 			$placeholder = $this->sanitiseForPlaceholder($fieldValue);
 			$fieldsForSQL["`".$fieldName."`"] = ":".$placeholder;
 			$queryData[$placeholder] = $fieldValue;
 		}
-
-		$id = $object->get("id");
+		if (!empty($id)) {
+			$fieldsForSQL["id"] = ":id";
+			$queryData["id"] = $id;
+		}
 
 		// Add modified and created dates
 		$queryData["NOW"] = gmdate("Y-m-d H:i:s");
@@ -188,14 +192,9 @@ abstract class DataMapper {
 		$query = substr($query, 2);
 
 		// Generate the rest of the SQL query
-		if (empty($id)) {
-			$query = "INSERT INTO `".$this->primaryDatabaseTable."` SET ".$query;
-		} else {
-			$query = "UPDATE `".$this->primaryDatabaseTable."` SET ".$query." WHERE id = :id";
-			$queryData["id"] = $object->get("id");
-		}
+		$query = "REPLACE INTO `".$this->primaryDatabaseTable."` SET ".$query;
 
-		// Run query
+		// Run the query
 		$this->prepareAndExecute($query, $queryData);
 
 		if (empty($id)) {
