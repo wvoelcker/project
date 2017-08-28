@@ -159,7 +159,7 @@ abstract class DataMapper {
 		return $date;
 	}
 
-	public function save($object) {
+	private function doSave($object, $forceInsert = false) {
 
 		// Generate column names, values, and placeholders for SQL query
 		$queryData = array();
@@ -188,7 +188,7 @@ abstract class DataMapper {
 		$query = substr($query, 2);
 
 		// Generate the rest of the SQL query
-		if (empty($id)) {
+		if (empty($id) or $forceInsert) {
 			$query = "INSERT INTO `".$this->primaryDatabaseTable."` SET ".$query;
 		} else {
 			$query = "UPDATE `".$this->primaryDatabaseTable."` SET ".$query." WHERE id = :id";
@@ -203,6 +203,14 @@ abstract class DataMapper {
 		}
 
 		return $object;
+	}
+
+	public function save($object) {
+		return $this->doSave($object);
+	}
+
+	public function insert($object) {
+		return $this->doSave($object, true);
 	}
 
 	private function prepareAndExecute($query, $data) {
