@@ -172,7 +172,7 @@ abstract class DataMapper {
 			$fieldsForSQL["`".$fieldName."`"] = ":".$placeholder;
 			$queryData[$placeholder] = $fieldValue;
 		}
-		if (!empty($id)) {
+		if (!empty($id) and empty($fieldsForSQL["id"])) {
 			$fieldsForSQL["id"] = ":id";
 			$queryData["id"] = $id;
 		}
