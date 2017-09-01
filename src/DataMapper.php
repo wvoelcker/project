@@ -230,13 +230,9 @@ abstract class DataMapper {
 		if ($name === "") {
 			return "emptystring";
 		}
-		$sanitisedName = strtolower($name);
-		$sanitisedName = str_replace(
-			array("0", "1", "2", "3", "4", "5", "6", "7", "8", "9"),
-			array("zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"),
-			$sanitisedName
-		);
-		$sanitisedName = preg_replace("/[^a-z]/", "", $sanitisedName);
+
+		$sanitisedName = md5($name);
+
 		return $sanitisedName;
 	}
 }
