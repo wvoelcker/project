@@ -209,8 +209,41 @@ abstract class DataMapper {
 		return $this->doSave($object);
 	}
 
-	public function insert($object) {
-		return $this->doSave($object, true);
+	public function insert($objects) {
+		if (is_array($objects)) {
+
+			$query = "INSERT INTO `".$this->primaryDatabaseTable."` ";
+
+			// Generate data for forming mysql query
+			$queryData = array();
+			foreach ($objects as $objectIndex => $object) {
+
+				$fieldNames = array();
+				$placeholders = array();
+
+				foreach ($this->mapFieldsToDatabase($object) as $fieldName => $fieldValue) {
+
+					if ($objectIndex == 0) {
+						$fieldNames[] = $fieldName;
+					}
+
+					$placeholder = $this->sanitiseForPlaceholder($objectIndex.$fieldName);
+					$placeholders[] = $placeholder;
+					$queryData[$placeholder] = $fieldValue;
+				}
+
+				if ($objectIndex == 0) {
+					$query .= "(`".join("`, `", $fieldNames)."`) VALUES ";
+				}
+
+				$query .= (($objectIndex == 0)?"":", ")."(".join(", ".$placeholders).")";
+			}
+
+			return $this->prepareAndExecute($query, $queryData);
+
+		} else {
+			return $this->doSave($objects, true);
+		}
 	}
 
 	private function prepareAndExecute($query, $data) {
