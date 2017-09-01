@@ -216,27 +216,32 @@ abstract class DataMapper {
 
 			// Generate data for forming mysql query
 			$queryData = array();
-			foreach ($objects as $objectIndex => $object) {
+			$isFirst = true;
+			foreach ($objects as $objectId => $object) {
 
 				$fieldNames = array();
 				$placeholders = array();
 
 				foreach ($this->mapFieldsToDatabase($object) as $fieldName => $fieldValue) {
 
-					if ($objectIndex == 0) {
+					if ($isFirst) {
 						$fieldNames[] = $fieldName;
 					}
 
-					$placeholder = $this->sanitiseForPlaceholder($objectIndex.$fieldName);
-					$placeholders[] = $placeholder;
+					$placeholder = $this->sanitiseForPlaceholder($objectId.$fieldName);
+					$placeholders[] = ":".$placeholder;
 					$queryData[$placeholder] = $fieldValue;
 				}
 
-				if ($objectIndex == 0) {
+				if ($isFirst) {
 					$query .= "(`".join("`, `", $fieldNames)."`) VALUES ";
 				}
 
-				$query .= (($objectIndex == 0)?"":", ")."(".join(", ".$placeholders).")";
+				$query .= (($isFirst)?"":", ")."(".join(", ", $placeholders).")";
+
+				if ($isFirst) {
+					$isFirst = false;
+				}
 			}
 
 			return $this->prepareAndExecute($query, $queryData);
