@@ -159,15 +159,14 @@ abstract class DataMapper {
 		return $date;
 	}
 
-	private function doSave($object, $forceInsert = false, $usePreparedStatementCache = false) {
-		static $preparedStatementCache = array();
+	private function doSave($object, $forceInsert = false) {
 
 		// Generate column names, values, and placeholders for SQL query
 		$queryData = array();
 		$fieldsForSQL = array();
 
 		foreach ($this->mapFieldsToDatabase($object) as $fieldName => $fieldValue) {
-			$placeholder = $this->sanitiseForPlaceholder($fieldName);
+			$placeholder = $this->sanitiseForPlaceholder($fieldValue);
 			$fieldsForSQL["`".$fieldName."`"] = ":".$placeholder;
 			$queryData[$placeholder] = $fieldValue;
 		}
@@ -196,20 +195,8 @@ abstract class DataMapper {
 			$queryData["id"] = $object->get("id");
 		}
 
-		// Prepare and run query
-		$statement = null;
-		$preparedStatementCacheKey = md5($query);
-		if ($usePreparedStatementCache and isset($preparedStatementCache[$preparedStatementCacheKey])) {
-			$statement = $preparedStatementCache[$preparedStatementCacheKey];
-		}
-		if (empty($statement)) {
-			$statement = $this->db->prepare($query);
-		}
-		if ($usePreparedStatementCache and !isset($preparedStatementCache[$preparedStatementCacheKey])) {
-			$preparedStatementCache[$preparedStatementCacheKey] = $statement;
-		}
-
-		$statement->execute($queryData);
+		// Run query
+		$this->prepareAndExecute($query, $queryData);
 
 		if (empty($id)) {
 			$object->set("id", $this->db->lastInsertId());
@@ -218,12 +205,12 @@ abstract class DataMapper {
 		return $object;
 	}
 
-	public function save($object, $usePreparedStatementCache = false) {
-		return $this->doSave($object, false, $usePreparedStatementCache);
+	public function save($object) {
+		return $this->doSave($object);
 	}
 
-	public function insert($object, $usePreparedStatementCache = false) {
-		return $this->doSave($object, true, $usePreparedStatementCache);
+	public function insert($object) {
+		return $this->doSave($object, true);
 	}
 
 	private function prepareAndExecute($query, $data) {
