@@ -69,11 +69,9 @@ abstract class DataMapper {
 
 		foreach ($criteria as $fieldName => $fieldValue) {
 
-			$placeholder = $this->sanitiseForPlaceholder($fieldName);
-
 			if (is_scalar($fieldValue)) {
-				$whereCriteria[] = "`".$fieldName."` = :".$placeholder;
-				$queryData[$placeholder] = $fieldValue;
+				$whereCriteria[] = "`".$fieldName."` = ?";
+				$queryData[] = $fieldValue;
 
 			} elseif (is_array($fieldValue)) {
 
@@ -85,12 +83,12 @@ abstract class DataMapper {
 						$whereCriteria[] = "`".$fieldName."` IS NOT NULL";
 						break;
 					case "less than":
-						$whereCriteria[] = "`".$fieldName."` < :".$placeholder;
-						$queryData[$placeholder] = $fieldValue["value"];
+						$whereCriteria[] = "`".$fieldName."` < ?";
+						$queryData[] = $fieldValue["value"];
 						break;
 					case "greater than":
-						$whereCriteria[] = "`".$fieldName."` > :".$placeholder;
-						$queryData[$placeholder] = $fieldValue["value"];
+						$whereCriteria[] = "`".$fieldName."` > ?";
+						$queryData[] = $fieldValue["value"];
 						break;
 					default:
 						throw new \Exception("Unknown field value type");
@@ -161,29 +159,29 @@ abstract class DataMapper {
 
 	private function doSave($object, $forceInsert = false) {
 
-		// Generate column names, values, and placeholders for SQL query
+		// Generate column names and values
 		$queryData = array();
 		$fieldsForSQL = array();
-
 		foreach ($this->mapFieldsToDatabase($object) as $fieldName => $fieldValue) {
-			$placeholder = $this->sanitiseForPlaceholder($fieldValue);
-			$fieldsForSQL["`".$fieldName."`"] = ":".$placeholder;
-			$queryData[$placeholder] = $fieldValue;
+			$fieldsForSQL[] = $fieldName;
+			$queryData[] = $fieldValue;
 		}
 
 		// Add modified and created dates
-		$queryData["NOW"] = gmdate("Y-m-d H:i:s");
-		$fieldsForSQL["updated_utc"] = ":NOW";
+		$now = gmdate("Y-m-d H:i:s");
+		$queryData[] = $now;
+		$fieldsForSQL[] = "updated_utc";
 		$id = $object->get("id");
 		$isInsert = (empty($id) or $forceInsert);
 		if ($isInsert) {
-			$fieldsForSQL["created_utc"] = ":NOW";
+			$fieldsForSQL[] = "created_utc";
+			$queryData[] = $now;
 		}
 
 		// Generate field names and values
 		$query = "";
-		foreach ($fieldsForSQL as $fieldName => $fieldValue) {
-			$query .= ", ".$fieldName."=".$fieldValue;
+		foreach ($fieldsForSQL as $fieldName) {
+			$query .= ", `".$fieldName."`= ? ";
 		}
 		$query = substr($query, 2);
 
@@ -191,8 +189,8 @@ abstract class DataMapper {
 		if ($isInsert) {
 			$query = "INSERT INTO `".$this->primaryDatabaseTable."` SET ".$query;
 		} else {
-			$query = "UPDATE `".$this->primaryDatabaseTable."` SET ".$query." WHERE id = :id";
-			$queryData["id"] = $object->get("id");
+			$query = "UPDATE `".$this->primaryDatabaseTable."` SET ".$query." WHERE id = ?";
+			$queryData[] = $object->get("id");
 		}
 
 		// Run query
@@ -220,7 +218,7 @@ abstract class DataMapper {
 			foreach ($objects as $objectId => $object) {
 
 				$fieldNames = array();
-				$placeholders = array();
+				$numFields = 0;
 
 				foreach ($this->mapFieldsToDatabase($object) as $fieldName => $fieldValue) {
 
@@ -228,16 +226,15 @@ abstract class DataMapper {
 						$fieldNames[] = $fieldName;
 					}
 
-					$placeholder = $this->sanitiseForPlaceholder($objectId.$fieldName);
-					$placeholders[] = ":".$placeholder;
-					$queryData[$placeholder] = $fieldValue;
+					$queryData[] = $fieldValue;
+					$numFields++;
 				}
 
 				if ($isFirst) {
 					$query .= "(`".join("`, `", $fieldNames)."`) VALUES ";
 				}
 
-				$query .= (($isFirst)?"":", ")."(".join(", ", $placeholders).")";
+				$query .= (($isFirst)?"":", ")."(".substr(str_repeat(", ? ", $numFields), 1).")";
 
 				if ($isFirst) {
 					$isFirst = false;
@@ -260,17 +257,4 @@ abstract class DataMapper {
 
 	abstract protected function mapFieldsFromDatabase($row);
 	abstract protected function mapFieldsToDatabase($object);
-
-	protected function sanitiseForPlaceholder($name) {
-		if ($name === null) {
-			return "NULL";
-		}
-		if ($name === "") {
-			return "emptystring";
-		}
-
-		$sanitisedName = md5($name);
-
-		return $sanitisedName;
-	}
 }
