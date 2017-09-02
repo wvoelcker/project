@@ -230,6 +230,16 @@ abstract class DataMapper {
 					$numFields++;
 				}
 
+				// Add created- and modified- dates
+				if ($isFirst) {
+					$fieldNames[] = "updated_utc";
+					$fieldNames[] = "created_utc";
+				}
+				$now = gmdate("Y-m-d H:i:s");
+				$queryData[] = $now;
+				$queryData[] = $now;
+				$numFields += 2;
+
 				if ($isFirst) {
 					$query .= "(`".join("`, `", $fieldNames)."`) VALUES ";
 				}
