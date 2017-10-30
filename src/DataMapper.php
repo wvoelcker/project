@@ -94,13 +94,11 @@ abstract class DataMapper {
 						if (!is_array($fieldValue["value"])) {
 							throw new \Exception("'in' operator expects an array of values");
 						}
-
 						$whereCriteria[] = "`".$fieldName."` IN (".join(", ", array_fill(
 							0,
 							count($fieldValue["value"]),
 							"?"
 						)).")";
-
 						$queryData = array_merge($queryData, $fieldValue["value"]);
 						break;
 					default:
