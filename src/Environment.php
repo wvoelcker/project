@@ -50,7 +50,7 @@ abstract class Environment {
 
 	public function get($key) {
 		if (!isset($this->data[$key])) {
-			throw new Exception("Data key '".$key."' not set");
+			throw new \Exception("Data key '".$key."' not set");
 		}
 		return $this->data[$key];
 	}
