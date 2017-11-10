@@ -12,7 +12,7 @@ use Phroute\Phroute\Exception\HttpRouteNotFoundException;
  */
 abstract class Router {
 	use Trait_AbstractTemplate;
-	protected $projectRoot, $activeEnvironment, $routeCollector, $controllersDirectory = "controllers", $defaultResponseMimeType = "text/html";
+	protected $projectRoot, $activeEnvironment, $routeCollector, $controllersDirectory = "controllers", $defaultResponseMimeType = "text/html", $catchExceptions = true;
 
 	protected function preSetUp() {
 		$args = func_get_args();
@@ -31,6 +31,9 @@ abstract class Router {
 			$this->runController("404", array(), $e);
 
 		} catch (Exception $e) {
+			if (!$this->catchExceptions) {
+				throw $e;
+			}
 			$this->runController("500", array(), $e);
 		}
 	}
@@ -53,6 +56,9 @@ abstract class Router {
 			$controller->run();
 
 		} catch (\Exception $e) {
+			if (!$this->catchExceptions) {
+				throw $e;
+			}
 			$this->runController("500", array(), $e);
 		}
 	}
