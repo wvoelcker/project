@@ -27,11 +27,6 @@ abstract class DataMapper {
 
 	public function generatePage($applicationSortCol, $sortDir, $offset, $maxResults, $applicationCriteria = array()) {
 
-		if (!isset($this->columnMappings[$applicationSortCol]) or !is_string($this->columnMappings[$applicationSortCol])) {
-			throw new \Exception("Can only sort by application properties that directly map to database columns");
-		}
-		$databaseSortCol = $this->columnMappings[$applicationSortCol];
-
 		$sortDir = strtoupper($sortDir);
 		if (!in_array($sortDir, array("ASC", "DESC"))) {
 			throw new \Exception("Invalid sort direction (should be 'asc' or 'desc')");
@@ -42,6 +37,11 @@ abstract class DataMapper {
 		if (!ctype_digit((string)$maxResults)) {
 			throw new \Exception("Invalid maximum results");
 		}
+
+		if (!isset($this->columnMappings[$applicationSortCol]) or !is_string($this->columnMappings[$applicationSortCol])) {
+			throw new \Exception("Can only sort by application properties that directly map to database columns");
+		}
+		$databaseSortCol = $this->columnMappings[$applicationSortCol];
 
 		$databaseCriteria = $this->mapCriteria($applicationCriteria);
 		$whereClauseData = $this->generateWhereClauseData($databaseCriteria);
