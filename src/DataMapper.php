@@ -10,7 +10,10 @@ abstract class DataMapper {
 	protected function preSetUp() {
 		$db = func_get_arg(0);
 		$this->db = $db;
-		$this->columnMappings = $this->getColumnMappings();
+
+		foreach ($this->getColumnMappings() as $key => $value) {
+			$this->columnMappings[$key] = ($value === true?$key:$value);
+		}
 	}
 
 	public function findById($id) {
