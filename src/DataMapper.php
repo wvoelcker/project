@@ -3,14 +3,13 @@ namespace WillV\Project;
 
 abstract class DataMapper {
 	use Trait_AbstractTemplate;
-	protected $db, $primaryDomainObject, $primaryDatabaseTable;
-
+	protected $primaryDomainObject, $primaryDatabaseTable;
 	protected $columnMappings = array();
 
-	protected function preSetUp() {
-		$db = func_get_arg(0);
-		$this->db = $db;
+	// This function should be overridden in the application
+	abstract protected function getColumnMappings();
 
+	protected function preSetUp() {
 		foreach ($this->getColumnMappings() as $key => $value) {
 			$this->columnMappings[$key] = ($value === true?$key:$value);
 		}
@@ -42,14 +41,9 @@ abstract class DataMapper {
 			throw new \Exception("Can only sort by application properties that directly map to database columns");
 		}
 		$databaseSortCol = $this->columnMappings[$applicationSortCol];
-
 		$databaseCriteria = $this->mapCriteria($applicationCriteria);
-		$whereClauseData = $this->generateWhereClauseData($databaseCriteria);
-		$query = "SELECT * FROM `".$this->primaryDatabaseTable."` ".$this->generateWhereClause($whereClauseData["whereCriteria"])." ORDER BY `".$databaseSortCol."` ".$sortDir." LIMIT ".$offset.", ".$maxResults;
 
-		$statement = $this->prepareAndExecute($query, $whereClauseData["queryData"]);
-		$rows = $statement->fetchAll(\PDO::FETCH_ASSOC);
-
+		$rows = $this->getRows($databaseSortCol, $sortDir, $offset, $maxResults, $databaseCriteria);
 		$output = array();
 		foreach ($rows as $row) {
 			$output[] = $this->createFromRow($row);
@@ -89,91 +83,12 @@ abstract class DataMapper {
 		return $object;
 	}
 
-	public function count($criteria = array()) {
-		$whereClauseData = $this->generateWhereClauseData($criteria);
-
-		$query = "SELECT COUNT(*) as num FROM `".$this->primaryDatabaseTable."` ".$this->generateWhereClause($whereClauseData["whereCriteria"]);
-		$statement = $this->prepareAndExecute($query, $whereClauseData["queryData"]);
-		$row = $statement->fetch(\PDO::FETCH_ASSOC);
-
-		return $row["num"];
-	}
-
 	public function delete($obj) {
 		$id = $obj->get("id");
 		if (empty($id)) {
 			throw new \Exception("Cannot delete objects with no ID");
 		}
-		$whereClauseData = $this->generateWhereClauseData(array("id" => $id));
-		$query = "DELETE FROM `".$this->primaryDatabaseTable."` ".$this->generateWhereClause($whereClauseData["whereCriteria"]);
-		$this->prepareAndExecute($query, $whereClauseData["queryData"]);
-	}
-
-	private function fetchRow($criteria) {
-		$whereClauseData = $this->generateWhereClauseData($criteria);
-
-		$query = "SELECT * FROM `".$this->primaryDatabaseTable."` ".$this->generateWhereClause($whereClauseData["whereCriteria"])." LIMIT 1";
-		$statement = $this->prepareAndExecute($query, $whereClauseData["queryData"]);
-		$row = $statement->fetch(\PDO::FETCH_ASSOC);
-
-		return $row;
-	}
-
-	private function generateWhereClause($whereCriteria) {
-		if (empty($whereCriteria)) {
-			return "";
-		}
-		return "WHERE (".join(") AND (", $whereCriteria).")";
-	}
-
-	private function generateWhereClauseData($criteria) {
-		$whereCriteria = array();
-		$queryData = array();
-
-		foreach ($criteria as $fieldName => $fieldValue) {
-
-			if (is_scalar($fieldValue)) {
-				$whereCriteria[] = "`".$fieldName."` = ?";
-				$queryData[] = $fieldValue;
-
-			} elseif (is_array($fieldValue)) {
-
-				switch ($fieldValue["type"]) {
-					case "is null":
-						$whereCriteria[] = "`".$fieldName."` IS NULL";
-						break;
-					case "is not null":
-						$whereCriteria[] = "`".$fieldName."` IS NOT NULL";
-						break;
-					case "less than":
-						$whereCriteria[] = "`".$fieldName."` < ?";
-						$queryData[] = $fieldValue["value"];
-						break;
-					case "greater than":
-						$whereCriteria[] = "`".$fieldName."` > ?";
-						$queryData[] = $fieldValue["value"];
-						break;
-					case "in":
-						if (!is_array($fieldValue["value"])) {
-							throw new \Exception("'in' operator expects an array of values");
-						}
-						$whereCriteria[] = "`".$fieldName."` IN (".join(", ", array_fill(
-							0,
-							count($fieldValue["value"]),
-							"?"
-						)).")";
-						$queryData = array_merge($queryData, $fieldValue["value"]);
-						break;
-					default:
-						throw new \Exception("Unknown field value type");
-				}
-
-			} else {
-				throw new \Exception("Invalid field value ".$fieldName." ".$fieldValue);
-			}
-		}
-
-		return array("whereCriteria" => $whereCriteria, "queryData" => $queryData);
+		return $this->deleteById($id);
 	}
 
 	private function createFromRow($row) {
@@ -191,64 +106,8 @@ abstract class DataMapper {
 			return null;
 		}
 
-		$query = "SELECT created_utc FROM `".$this->primaryDatabaseTable."` WHERE id = :id LIMIT 1";
-
-		$statement = $this->prepareAndExecute($query, array("id" => $id));
-		$row = $statement->fetch(\PDO::FETCH_ASSOC);
-
-		if (empty($row)) {
-			return null;
-		}
-
-		$date = new \DateTime($row["created_utc"], new \DateTimeZone("UTC"));
-
+		$date = $this->getDateCreatedById($id);
 		return $date;
-	}
-
-	private function doSave($object, $forceInsert = false) {
-
-		// Generate column names and values
-		$queryData = array();
-		$fieldsForSQL = array();
-		foreach ($this->mapFieldsToDatabase($object) as $fieldName => $fieldValue) {
-			$fieldsForSQL[] = $fieldName;
-			$queryData[] = $fieldValue;
-		}
-
-		// Add modified and created dates
-		$now = gmdate("Y-m-d H:i:s");
-		$queryData[] = $now;
-		$fieldsForSQL[] = "updated_utc";
-		$id = $object->get("id");
-		$isInsert = (empty($id) or $forceInsert);
-		if ($isInsert) {
-			$fieldsForSQL[] = "created_utc";
-			$queryData[] = $now;
-		}
-
-		// Generate field names and values
-		$query = "";
-		foreach ($fieldsForSQL as $fieldName) {
-			$query .= ", `".$fieldName."`= ? ";
-		}
-		$query = substr($query, 2);
-
-		// Generate the rest of the SQL query
-		if ($isInsert) {
-			$query = "INSERT INTO `".$this->primaryDatabaseTable."` SET ".$query;
-		} else {
-			$query = "UPDATE `".$this->primaryDatabaseTable."` SET ".$query." WHERE id = ?";
-			$queryData[] = $object->get("id");
-		}
-
-		// Run query
-		$this->prepareAndExecute($query, $queryData);
-
-		if (empty($id)) {
-			$object->set("id", $this->db->lastInsertId());
-		}
-
-		return $object;
 	}
 
 	public function save($object) {
@@ -257,71 +116,21 @@ abstract class DataMapper {
 
 	public function insert($objects) {
 		if (is_array($objects)) {
-
-			$query = "INSERT INTO `".$this->primaryDatabaseTable."` ";
-
-			// Generate data for forming mysql query
-			$queryData = array();
-			$isFirst = true;
-			foreach ($objects as $objectId => $object) {
-
-				$fieldNames = array();
-				$numFields = 0;
-
-				foreach ($this->mapFieldsToDatabase($object) as $fieldName => $fieldValue) {
-
-					if ($isFirst) {
-						$fieldNames[] = $fieldName;
-					}
-
-					$queryData[] = $fieldValue;
-					$numFields++;
-				}
-
-				// Add created- and modified- dates
-				if ($isFirst) {
-					$fieldNames[] = "updated_utc";
-					$fieldNames[] = "created_utc";
-				}
-				$now = gmdate("Y-m-d H:i:s");
-				$queryData[] = $now;
-				$queryData[] = $now;
-				$numFields += 2;
-
-				if ($isFirst) {
-					$query .= "(`".join("`, `", $fieldNames)."`) VALUES ";
-				}
-
-				$query .= (($isFirst)?"":", ")."(".substr(str_repeat(", ? ", $numFields), 1).")";
-
-				if ($isFirst) {
-					$isFirst = false;
-				}
-			}
-
-			return $this->prepareAndExecute($query, $queryData);
-
+			return $this->doInsertMultiple($objects);
 		} else {
 			return $this->doSave($objects, true);
 		}
 	}
 
-	private function prepareAndExecute($query, $data) {
-		$statement = $this->db->prepare($query);
-		$statement->execute($data);
-
-		return $statement;
-	}
-
-	private function mapFieldsToDatabase($object) {
+	protected function mapFieldsToDatabase($object) {
 		return $this->mapFields($object);
 	}
 
-	private function mapFieldsFromDatabase($row) {
+	protected function mapFieldsFromDatabase($row) {
 		return $this->mapFields($row, false);
 	}
 
-	private function mapFields($item, $isToDatabase = true) {
+	protected function mapFields($item, $isToDatabase = true) {
 		$output = array();
 		$mapFunc = ($isToDatabase?0:1);
 		foreach ($this->columnMappings as $applicationField => $databaseField) {
@@ -345,5 +154,12 @@ abstract class DataMapper {
 		return $output;
 	}
 
-	abstract protected function getColumnMappings();
+	// These functions should be overridden in intermediary classes for communicating with particular database engines (e.g. MySQL)
+	abstract protected function getRows($sortCol, $sortDir, $offset, $maxResults, $criteria = array());
+	abstract protected function countRows($criteria);
+	abstract protected function deleteById($id);
+	abstract protected function fetchRow($criteria);
+	abstract protected function getDateCreatedById($id);
+	abstract protected function doSave($object, $forceInsert = false);
+	abstract protected function doInsertMultiple($objects);
 }
