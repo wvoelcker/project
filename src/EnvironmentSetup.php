@@ -4,7 +4,7 @@ namespace WillV\Project;
 abstract class EnvironmentSetup {
 	use Trait_AbstractTemplate;
 	protected $projectRoot, $configRoot, $timezone = "UTC";
-	protected $autoLoaderSet = array(), $viewConfigurator = array(), $environmentList = array();
+	protected $autoLoaderSet = array(), $environmentList = array();
 
 	protected function preSetUp() {
 		$args = func_get_args();
@@ -17,10 +17,6 @@ abstract class EnvironmentSetup {
 
 	public function setAutoLoaders(AutoLoaderSet $autoLoaderSet) {
 		$this->autoLoaderSet = $autoLoaderSet;
-	}
-
-	public function setViewConfigurator(ViewConfigurator $viewConfigurator) {
-		$this->viewConfigurator = $viewConfigurator;
 	}
 
 	public function setEnvironmentList(EnvironmentList $environmentList) {
@@ -47,9 +43,6 @@ abstract class EnvironmentSetup {
 
 	private function setUpViews() {
 		View::setDefaultProjectRoot($this->projectRoot);
-		if (!empty($this->viewConfigurator)) {
-			View::setViewConfigurator($this->viewConfigurator);
-		}
 	}
 
 	private function setUpEnvironment() {

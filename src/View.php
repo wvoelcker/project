@@ -2,7 +2,7 @@
 namespace WillV\Project;
 
 class View {
-	static protected $defaultProjectRoot, $viewConfigurator, $templateCache = array();
+	static protected $defaultProjectRoot, $templateCache = array();
 	protected $projectRoot, $viewName, $templatesDirectory = "templates", $templateData, $templateEngine, $templateFileExtension, $filters = array(), $globalFilters = array(), $postFilters = array();
 
 	static public function create($viewName, $projectRoot = null) {
@@ -19,19 +19,11 @@ class View {
 		$view->templateEngine = new \Mustache_Engine;
 		$view->templateFileExtension = "mustache";
 
-		if (!empty(self::$viewConfigurator)) {
-			self::$viewConfigurator->configure($viewName, $view);
-		}
-
 		return $view;
 	}
 
 	static public function setDefaultProjectRoot($defaultProjectRoot) {
 		self::$defaultProjectRoot = $defaultProjectRoot;
-	}
-
-	static public function setViewConfigurator($viewConfigurator) {
-		self::$viewConfigurator = $viewConfigurator;
 	}
 
 	public function set($key, $value = null) {
