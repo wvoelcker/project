@@ -10,7 +10,7 @@ abstract class DomainObject {
 
 		// Make sure the 'id' field is present, because the data-mapper class expects it
 		if (!isset($this->fields["id"])) {
-			$this->fields["id"] = array("publicVersion" => true);
+			$this->fields["id"] = array("visibility" => "public");
 		}
 
 		$validationErrors = array();
