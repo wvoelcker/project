@@ -3,26 +3,20 @@ namespace WillV\Project;
 
 abstract class DomainObject {
 	use Trait_AbstractTemplate;
-	protected $data = array(), $fields = array();
+	protected $data = array(), $dataSetName;
+	private $dataSet;
 
 	protected function postSetUp() {
 		$data = func_get_arg(0);
 
-		// Make sure the 'id' field is present, because the data-mapper class expects it
+		// Validate supplied data
+		$dataSetName = $this->dataSetName;
+		$this->dataSet = $dataSetName::create();
+		$this->fields = $this->dataSet->getFields();
 		if (!isset($this->fields["id"])) {
-			$this->fields["id"] = array("visibility" => "public");
+			throw new \Exception("No ID field in supplied dataset");
 		}
-
-		$validationErrors = array();
-		foreach ($this->fields as $fieldname => $fieldDetails) {
-			if (!empty($fieldDetails["required"]) and !isset($data[$fieldname])) {
-				$validationErrors[$fieldname] = "Not supplied";
-			} elseif (!empty($fieldDetails["notempty"]) and empty($data[$fieldname])) {
-				$validationErrors[$fieldname] = "Cannot be empty";
-			}
-		}
-
-		if (!empty($validationErrors)) {
+		if (!$this->dataSet->isValid($data, $validationErrors)) {
 			throw new \Exception("Problems with supplied data: ".json_encode($validationErrors));
 		}
 
