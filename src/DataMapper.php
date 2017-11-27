@@ -5,16 +5,76 @@ abstract class DataMapper {
 	use Trait_AbstractTemplate;
 	protected $db, $primaryDomainObject, $primaryDatabaseTable;
 
+	protected $columnMappings = array();
+
 	protected function preSetUp() {
 		$db = func_get_arg(0);
 		$this->db = $db;
+		$this->columnMappings = $this->getColumnMappings();
 	}
 
 	public function findById($id) {
 		return $this->createSingle(array("id" => $id));
 	}
 
-	public function createSingle($criteria) {
+	public function findSingleFromCriteria($applicationCriteria) {
+		$databaseCriteria = $this->mapCriteria($applicationCriteria);
+		return $this->createSingle($databaseCriteria);
+	}
+
+	public function generatePage($applicationSortCol, $sortDir, $offset, $maxResults, $applicationCriteria = array()) {
+
+		if (!isset($this->columnMappings[$applicationSortCol]) or !is_string($this->columnMappings[$applicationSortCol])) {
+			throw new \Exception("Can only sort by application properties that directly map to database columns");
+		}
+		$databaseSortCol = $this->columnMappings[$applicationSortCol];
+
+		$sortDir = strtoupper($sortDir);
+		if (!in_array($sortDir, array("ASC", "DESC"))) {
+			throw new \Exception("Invalid sort direction (should be 'asc' or 'desc')");
+		}
+		if (!ctype_digit((string)$offset)) {
+			throw new \Exception("Invalid offset");
+		}
+		if (!ctype_digit((string)$maxResults)) {
+			throw new \Exception("Invalid maximum results");
+		}
+
+		$databaseCriteria = $this->mapCriteria($applicationCriteria);
+		$whereClauseData = $this->generateWhereClauseData($databaseCriteria);
+		$query = "SELECT * FROM `".$this->primaryDatabaseTable."` ".$this->generateWhereClause($whereClauseData["whereCriteria"])." ORDER BY `".$databaseSortCol."` ".$sortDir." LIMIT ".$offset.", ".$maxResults;
+
+		$statement = $this->prepareAndExecute($query, $whereClauseData["queryData"]);
+		$rows = $statement->fetchAll(\PDO::FETCH_ASSOC);
+
+		$output = array();
+		foreach ($rows as $row) {
+			$output[] = $this->createFromRow($row);
+		}
+
+		return $output;
+	}
+
+	private function mapCriteria($applicationCriteria) {
+		$databaseCriteria = array();
+
+		foreach ($applicationCriteria as $key => $value) {
+			if (!isset($this->columnMappings[$key])) {
+				throw new \Exception("No mapping for property '".$key."'");
+			}
+
+			if (is_string($this->columnMappings[$key])) {
+				$databaseCriteria[$this->columnMappings[$key]] = $value;
+				continue;
+			}
+
+			throw new \Exception("Can only use criteria that directly map application properties to database columns");
+		}
+
+		return $databaseCriteria;
+	}
+
+	private function createSingle($criteria) {
 		$row = $this->fetchRow($criteria);
 
 		if (empty($row)) {
@@ -111,32 +171,6 @@ abstract class DataMapper {
 		}
 
 		return array("whereCriteria" => $whereCriteria, "queryData" => $queryData);
-	}
-
-	public function createPage($sortCol, $sortDir, $offset, $maxResults, $criteria = array()) {
-		$sortDir = strtoupper($sortDir);
-		if (!in_array($sortDir, array("ASC", "DESC"))) {
-			throw new \Exception("Invalid sort direction (should be 'asc' or 'desc')");
-		}
-		if (!ctype_digit((string)$offset)) {
-			throw new \Exception("Invalid offset");
-		}
-		if (!ctype_digit((string)$maxResults)) {
-			throw new \Exception("Invalid maximum results");
-		}
-
-		$whereClauseData = $this->generateWhereClauseData($criteria);
-		$query = "SELECT * FROM `".$this->primaryDatabaseTable."` ".$this->generateWhereClause($whereClauseData["whereCriteria"])." ORDER BY `".$sortCol."` ".$sortDir." LIMIT ".$offset.", ".$maxResults;
-
-		$statement = $this->prepareAndExecute($query, $whereClauseData["queryData"]);
-		$rows = $statement->fetchAll(\PDO::FETCH_ASSOC);
-
-		$output = array();
-		foreach ($rows as $row) {
-			$output[] = $this->createFromRow($row);
-		}
-
-		return $output;
 	}
 
 	private function createFromRow($row) {
@@ -276,6 +310,37 @@ abstract class DataMapper {
 		return $statement;
 	}
 
-	abstract protected function mapFieldsFromDatabase($row);
-	abstract protected function mapFieldsToDatabase($object);
+	private function mapFieldsToDatabase($object) {
+		return $this->mapFields($object);
+	}
+
+	private function mapFieldsFromDatabase($row) {
+		return $this->mapFields($row, false);
+	}
+
+	private function mapFields($item, $isToDatabase = true) {
+		$output = array();
+		$mapFunc = ($isToDatabase?"to":"from")."Database";
+		foreach ($this->columnMappings as $applicationField => $databaseField) {
+			if (is_string($databaseField)) {
+				$outputKey = ($isToDatabase?$databaseField:$applicationField);
+				$outputValue = ($isToDatabase?$item->get($applicationField):$item[$databaseField]);
+				$output[$outputKey] = $outputValue;
+
+			} elseif (is_array($databaseField) and isset($databaseField[$mapFunc]) and is_callable($databaseField[$mapFunc])) {
+				$mappedData = call_user_func_array($databaseField[$mapFunc], array($item));
+				if (!is_array($mappedData) or !isset($mappedData["key"]) or !isset($mappedData["value"])) {
+					throw new \Exception("Invalid mapping function");
+				}
+				$output[$mappedData["key"]] = $mappedData["value"];
+
+			} else {
+				throw new \Exception("Invalid column mapping");
+			}
+		}
+
+		return $output;
+	}
+
+	abstract protected function getColumnMappings();
 }
