@@ -1,5 +1,5 @@
 <?php
-namespace WillV\Project;
+namespace WillV\Project\Mailer;
 require_once __DIR__."/OmniTI_Mailer.php";
 
 abstract class Mailer {
