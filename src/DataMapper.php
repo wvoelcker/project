@@ -320,7 +320,7 @@ abstract class DataMapper {
 
 	private function mapFields($item, $isToDatabase = true) {
 		$output = array();
-		$mapFunc = ($isToDatabase?"to":"from")."Database";
+		$mapFunc = ($isToDatabase?0:1);
 		foreach ($this->columnMappings as $applicationField => $databaseField) {
 			if (is_string($databaseField)) {
 				$outputKey = ($isToDatabase?$databaseField:$applicationField);
