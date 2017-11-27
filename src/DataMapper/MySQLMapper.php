@@ -1,5 +1,5 @@
 <?php
-namespace WillV\Project;
+namespace WillV\Project\DataMapper;
 
 abstract class MySQLMapper extends DataMapper {
 	protected $db;
