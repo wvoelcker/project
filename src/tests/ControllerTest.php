@@ -31,11 +31,16 @@ class TestController extends TestCase {
 		$testProjRoot = "/dev/shm/project-tests-".uniqid();
 		$testControllerDir = $testProjRoot."/controllers";
 		if (!file_exists($testControllerDir)) {
-			mkdir($testControllerDir, 0777, true);
+			mkdir($testControllerDir, 0600, true);
 		}
 		$thisControllerPathNoExtension = tempnam($testControllerDir, "project");
 		$thisControllerPath = $thisControllerPathNoExtension.".php";
 		rename($thisControllerPathNoExtension, $thisControllerPath);
+
+		// Make a file accessible only to the current user
+		// TODO:WV:20180226:What is the most secure way of doing this?  Any way to limit the file to the current *process* (not the current user?)
+		chmod($thisControllerPath, 0600);
+
 		$thisControllerName = basename($thisControllerPath, ".php");
 
 		file_put_contents($thisControllerPath, $fileContents);
