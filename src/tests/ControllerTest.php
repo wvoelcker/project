@@ -130,15 +130,21 @@ class TestController extends TestCase {
 	}
 
 	public function testItShouldReturnAReferenceToItselfAfterCallingSetRelativeFilePath() {
-
+		$controller = Controller::create("/dev/null", $this->makeDummyEnvironment());
+		$output = $controller->setRelativeFilePath("test");
+		$this->assertEquals($output, $controller);
 	}
 
 	public function testItShouldReturnAReferenceToItselfAfterCallingSetUrlParams() {
-
+		$controller = Controller::create("/dev/null", $this->makeDummyEnvironment());
+		$output = $controller->setUrlParams(array("testKey" => "testValue"));
+		$this->assertEquals($output, $controller);
 	}
 
 	public function testItShouldReturnAReferenceToItselfAfterCallingSetLastException() {
-
+		$controller = Controller::create("/dev/null", $this->makeDummyEnvironment());
+		$output = $controller->setLastException(new \Exception("Test Exception"));
+		$this->assertEquals($output, $controller);
 	}
 
 }
