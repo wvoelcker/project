@@ -57,11 +57,19 @@ class TestController extends TestCase {
 		rmdir(dirname($controllerDetails["fullPath"]));
 	}
 
-	private function createAndRunTestController($fileContents) {
+	private function createAndRunTestController($fileContents, $urlParams = array(), $lastException = null) {
 		$controllerDetails = $this->makeTestController("<?php ".$fileContents);
 
 		$controller = Controller::create($controllerDetails["testProjRoot"], $this->makeDummyEnvironment());
 		$controller->setRelativeFilePath($controllerDetails["controllerName"]);
+
+		if (!empty($urlParams)) {
+			$controller->setUrlParams($urlParams);
+		}
+
+		if (!empty($lastException)) {
+			$controller->setLastException($lastException);
+		}
 
 		ob_start();
 		$controller->run();
@@ -102,11 +110,23 @@ class TestController extends TestCase {
 	}
 
 	public function testItShouldMakeUrlParametersAvailableToRequiredControllers() {
+		$controllerDetails = $this->createAndRunTestController("echo \$this->urlParams['dummyUrlParam'];", array("dummyUrlParam" => "dummyUrlParamValue"));
 
+		$this->assertEquals(
+			"dummyUrlParamValue",
+			$controllerDetails["output"]
+		);
+		$this->tidyUpTestController($controllerDetails);
 	}
 
 	public function testItShouldMakeTheLastExceptionAvailableToRequiredControllers() {
+		$controllerDetails = $this->createAndRunTestController("echo \$this->lastException->getMessage();", array(), new \Exception("Test Exception"));
 
+		$this->assertEquals(
+			"Test Exception",
+			$controllerDetails["output"]
+		);
+		$this->tidyUpTestController($controllerDetails);
 	}
 
 	public function testItShouldReturnAReferenceToItselfAfterCallingSetRelativeFilePath() {
