@@ -43,8 +43,4 @@ class Controller {
 		require $this->projectRoot."/".$this->controllersDirectory."/".$this->relativeFilePath.".php";
 	}
 
-	protected function run404ControllerAndExit() {
-		Controller::create($this->projectRoot, $this->activeEnvironment)->setRelativeFilePath("404")->run();
-		exit;
-	}
 }

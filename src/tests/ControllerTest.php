@@ -70,14 +70,6 @@ class TestController extends TestCase {
 		$this->tidyUpTestController($controllerDetails);
 	}
 
-	public function testItShouldRunAControllerCalled404AfterCallingRun404ControllerAndExit() {
-		
-	}
-
-	public function testItShouldExitAfterCallingRun404ControllerAndExit() {
-
-	}
-
 	public function testItShouldMakeProjectRootAvailableToRequiredControllers() {
 
 	}
