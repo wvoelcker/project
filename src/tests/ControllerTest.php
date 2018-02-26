@@ -14,7 +14,7 @@ class TestController extends TestCase {
 	private function makeDummyEnvironment() {
 		return DummyEnvironment::create(
 			array(
-				"dummyKey" => true
+				"dummyKey" => "dummyValue"
 			),
 			function() {
 				return true;
@@ -31,7 +31,7 @@ class TestController extends TestCase {
 		$testProjRoot = "/dev/shm/project-tests-".uniqid();
 		$testControllerDir = $testProjRoot."/controllers";
 		if (!file_exists($testControllerDir)) {
-			mkdir($testControllerDir, 0600, true);
+			mkdir($testControllerDir, 0700, true);
 		}
 		$thisControllerPathNoExtension = tempnam($testControllerDir, "project");
 		$thisControllerPath = $thisControllerPathNoExtension.".php";
@@ -92,7 +92,13 @@ class TestController extends TestCase {
 	}
 
 	public function testItShouldMakeActiveEnvironmentAvailableToRequiredControllers() {
+		$controllerDetails = $this->createAndRunTestController("echo \$this->activeEnvironment->get('dummyKey');");
 
+		$this->assertEquals(
+			"dummyValue",
+			$controllerDetails["output"]
+		);
+		$this->tidyUpTestController($controllerDetails);
 	}
 
 	public function testItShouldMakeUrlParametersAvailableToRequiredControllers() {
