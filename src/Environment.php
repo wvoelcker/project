@@ -3,7 +3,7 @@ namespace WillV\Project;
 
 abstract class Environment {
 	use Trait_AbstractTemplate;
-	protected $data, $isActiveClosure, $requiredFields;
+	protected $data, $isActiveClosure, $requiredFields = array();
 
 	protected function postSetUp() {
 
@@ -30,6 +30,10 @@ abstract class Environment {
 
 				$data += json_decode(file_get_contents($dataFile), true);
 			}
+		}
+
+		if (!is_array($this->requiredFields)) {
+			throw new \Exception("requiredFields is not an array");
 		}
 
 		// Make sure all required data was provided
