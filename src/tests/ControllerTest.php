@@ -52,7 +52,7 @@ class TestController extends TestCase {
 		rmdir(dirname($controllerDetails["fullPath"]));
 	}
 
-	public function testItShouldUseAllThreePartsOfThePathCorrectlyWhenWorkingOutThePathOfAController() {
+	public function testItShouldUseAllThreePartsOfThePathCorrectlyWhenWorkingOutThePathOfAControllerAndRequireTheControllerWhenRunIsCalled() {
 		$controllerDetails = $this->makeTestController("<?php
 			echo __FILE__;
 		");
@@ -68,29 +68,6 @@ class TestController extends TestCase {
 		$this->assertEquals($controllerDetails["testProjRoot"]."/controllers/".$controllerDetails["controllerName"].".php", $output);
 
 		$this->tidyUpTestController($controllerDetails);
-	}
-
-	/*
-	public function testItShouldUseControllersAsTheDefaultNameForTheControllersDirectory() {
-		$controller = Controller::create("/dev/null", $this->makeDummyEnvironment());
-		$controller->run();
-	}
-	*/
-
-	public function testItShouldUseTheSuppliedProjectRootAsTheProjectRootWhenWorkignOutThePathOfAController() {
-
-	}
-
-	public function testItShouldAppendTheConfiguredRelativeFilePathAfterTheControllersDirectoryWhenWorkingOutThePathOfAController() {
-
-	}
-
-	public function testItShouldRequireTheControllerWhenRunIsCalled() {
-
-	}
-
-	public function testItShouldNotIncludeTheControllerWhenRunIsCalled() {
-
 	}
 
 	public function testItShouldRunAControllerCalled404AfterCallingRun404ControllerAndExit() {
