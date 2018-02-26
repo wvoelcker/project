@@ -71,7 +71,10 @@ class TestController extends TestCase {
 			echo __FILE__;
 		");
 
-		$this->assertEquals($controllerDetails["testProjRoot"]."/controllers/".$controllerDetails["controllerName"].".php", $controllerDetails["output"]);
+		$this->assertEquals(
+			$controllerDetails["testProjRoot"]."/controllers/".$controllerDetails["controllerName"].".php",
+			$controllerDetails["output"]
+		);
 		$this->tidyUpTestController($controllerDetails);
 	}
 
@@ -80,7 +83,10 @@ class TestController extends TestCase {
 			echo \$this->projectRoot;
 		");
 
-		$this->assertEquals($controllerDetails["testProjRoot"], $controllerDetails["output"]);
+		$this->assertEquals(
+			$controllerDetails["testProjRoot"],
+			$controllerDetails["output"]
+		);
 		$this->tidyUpTestController($controllerDetails);
 	}
 
