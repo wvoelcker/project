@@ -28,7 +28,7 @@ class TestController extends TestCase {
 	}
 
 	private function makeTestController($fileContents = "") {
-		$testProjRoot = "/dev/shm/project-tests";
+		$testProjRoot = "/dev/shm/project-tests-".uniqid();
 		$testControllerDir = $testProjRoot."/controllers";
 		if (!file_exists($testControllerDir)) {
 			mkdir($testControllerDir, 0777, true);
@@ -41,8 +41,13 @@ class TestController extends TestCase {
 		return array(
 			"testProjRoot" => $testProjRoot,
 			"controllerName" => $thisControllerName,
-			"fullPath" => $testControllerDir."/".$thisControllerName,
+			"fullPath" => $thisControllerPath,
 		);
+	}
+
+	private function tidyUpTestController($controllerDetails) {
+		unlink($controllerDetails["fullPath"]);
+		rmdir(dirname($controllerDetails["fullPath"]));
 	}
 
 	public function testItShouldUseAllThreePartsOfThePathCorrectlyWhenWorkingOutThePathOfAController() {
@@ -52,7 +57,7 @@ class TestController extends TestCase {
 		$controller->setRelativeFilePath($controllerDetails["controllerName"]);
 		$controller->run();
 
-		unlink($controllerDetails["fullPath"]);
+		$this->tidyUpTestController($controllerDetails);
 	}
 
 	/*
