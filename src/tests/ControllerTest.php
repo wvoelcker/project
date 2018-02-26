@@ -53,7 +53,7 @@ class TestController extends TestCase {
 	}
 
 	private function createAndRunTestController($fileContents) {
-		$controllerDetails = $this->makeTestController($fileContents);
+		$controllerDetails = $this->makeTestController("<?php ".$fileContents);
 
 		$controller = Controller::create($controllerDetails["testProjRoot"], $this->makeDummyEnvironment());
 		$controller->setRelativeFilePath($controllerDetails["controllerName"]);
@@ -67,9 +67,7 @@ class TestController extends TestCase {
 	}
 
 	public function testItShouldUseAllThreePartsOfThePathCorrectlyWhenWorkingOutThePathOfAControllerAndRequireTheControllerWhenRunIsCalled() {
-		$controllerDetails = $this->createAndRunTestController("<?php
-			echo __FILE__;
-		");
+		$controllerDetails = $this->createAndRunTestController("echo __FILE__;");
 
 		$this->assertEquals(
 			$controllerDetails["testProjRoot"]."/controllers/".$controllerDetails["controllerName"].".php",
@@ -79,9 +77,7 @@ class TestController extends TestCase {
 	}
 
 	public function testItShouldMakeProjectRootAvailableToRequiredControllers() {
-		$controllerDetails = $this->createAndRunTestController("<?php
-			echo \$this->projectRoot;
-		");
+		$controllerDetails = $this->createAndRunTestController("echo \$this->projectRoot;");
 
 		$this->assertEquals(
 			$controllerDetails["testProjRoot"],
