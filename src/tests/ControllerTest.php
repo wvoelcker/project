@@ -38,6 +38,8 @@ class TestController extends TestCase {
 		rename($thisControllerPathNoExtension, $thisControllerPath);
 		$thisControllerName = basename($thisControllerPath, ".php");
 
+		file_put_contents($thisControllerPath, $fileContents);
+
 		return array(
 			"testProjRoot" => $testProjRoot,
 			"controllerName" => $thisControllerName,
@@ -51,11 +53,19 @@ class TestController extends TestCase {
 	}
 
 	public function testItShouldUseAllThreePartsOfThePathCorrectlyWhenWorkingOutThePathOfAController() {
-		$controllerDetails = $this->makeTestController();
+		$controllerDetails = $this->makeTestController("<?php
+			echo __FILE__;
+		");
 
 		$controller = Controller::create($controllerDetails["testProjRoot"], $this->makeDummyEnvironment());
 		$controller->setRelativeFilePath($controllerDetails["controllerName"]);
+
+		ob_start();
 		$controller->run();
+		$output = ob_get_contents();
+		ob_end_clean();
+
+		$this->assertEquals($controllerDetails["testProjRoot"]."/controllers/".$controllerDetails["controllerName"].".php", $output);
 
 		$this->tidyUpTestController($controllerDetails);
 	}
