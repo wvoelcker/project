@@ -4,14 +4,18 @@ use WillV\Project\Controller;
 use WillV\Project\Environment;
 
 class DummyEnvironment extends Environment {
-	protected function setUp() {}
+	protected function setUp() {
+		$this->requiredFields = array("dummyKey");
+	}
 }
 
 class TestController extends TestCase {
 
 	private function makeDummyEnvironment() {
 		return DummyEnvironment::create(
-			array(),
+			array(
+				"dummyKey" => true
+			),
 			function() {
 				return true;
 			}
@@ -21,6 +25,93 @@ class TestController extends TestCase {
 	public function testCreateShouldMakeANewController() {
 		$controller = Controller::create("/dev/null", $this->makeDummyEnvironment());
 		$this->assertTrue($controller instanceof Controller);
+	}
+
+	private function makeTestController($fileContents = "") {
+		$testProjRoot = "/dev/shm/project-tests";
+		$testControllerDir = $testProjRoot."/controllers";
+		if (!file_exists($testControllerDir)) {
+			mkdir($testControllerDir, 0777, true);
+		}
+		$thisControllerPathNoExtension = tempnam($testControllerDir, "project");
+		$thisControllerPath = $thisControllerPathNoExtension.".php";
+		rename($thisControllerPathNoExtension, $thisControllerPath);
+		$thisControllerName = basename($thisControllerPath, ".php");
+
+		return array(
+			"testProjRoot" => $testProjRoot,
+			"controllerName" => $thisControllerName,
+			"fullPath" => $testControllerDir."/".$thisControllerName,
+		);
+	}
+
+	public function testItShouldUseAllThreePartsOfThePathCorrectlyWhenWorkingOutThePathOfAController() {
+		$controllerDetails = $this->makeTestController();
+
+		$controller = Controller::create($controllerDetails["testProjRoot"], $this->makeDummyEnvironment());
+		$controller->setRelativeFilePath($controllerDetails["controllerName"]);
+		$controller->run();
+
+		unlink($controllerDetails["fullPath"]);
+	}
+
+	/*
+	public function testItShouldUseControllersAsTheDefaultNameForTheControllersDirectory() {
+		$controller = Controller::create("/dev/null", $this->makeDummyEnvironment());
+		$controller->run();
+	}
+	*/
+
+	public function testItShouldUseTheSuppliedProjectRootAsTheProjectRootWhenWorkignOutThePathOfAController() {
+
+	}
+
+	public function testItShouldAppendTheConfiguredRelativeFilePathAfterTheControllersDirectoryWhenWorkingOutThePathOfAController() {
+
+	}
+
+	public function testItShouldRequireTheControllerWhenRunIsCalled() {
+
+	}
+
+	public function testItShouldNotIncludeTheControllerWhenRunIsCalled() {
+
+	}
+
+	public function testItShouldRunAControllerCalled404AfterCallingRun404ControllerAndExit() {
+		
+	}
+
+	public function testItShouldExitAfterCallingRun404ControllerAndExit() {
+
+	}
+
+	public function testItShouldMakeProjectRootAvailableToRequiredControllers() {
+
+	}
+
+	public function testItShouldMakeActiveEnvironmentAvailableToRequiredControllers() {
+
+	}
+
+	public function testItShouldMakeUrlParametersAvailableToRequiredControllers() {
+
+	}
+
+	public function testItShouldMakeTheLastExceptionAvailableToRequiredControllers() {
+
+	}
+
+	public function testItShouldReturnAReferenceToItselfAfterCallingSetRelativeFilePath() {
+
+	}
+
+	public function testItShouldReturnAReferenceToItselfAfterCallingSetUrlParams() {
+
+	}
+
+	public function testItShouldReturnAReferenceToItselfAfterCallingSetLastException() {
+
 	}
 
 }
