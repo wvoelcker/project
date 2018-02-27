@@ -53,7 +53,7 @@ class TestDataset extends TestCase {
 			"this-field-cannot-be-empty" => array("notempty" => true),
 			"this-field-must-be-supplied" => array("required" => true),
 			"this-field-is-optional" => array("required" => false),
-			"this-field-has-a-set-of-allowed-values" => array("allowedValues" => array("aalpha", "beta", "gamma")),
+			"this-field-has-a-set-of-allowed-values" => array("allowedValues" => array("alpha", "beta", "gamma")),
 			"this-field-should-be-a-12-hour-time" => array("validate12HrTime" => true),
 			"this-field-should-be-a-uk-format-date" => array("validateDateUK" => true),
 			"this-field-should-be-a-mysql-format-date" => array("validateDateMySQL" => true),
@@ -82,7 +82,7 @@ class TestDataset extends TestCase {
 		$this->assertTrue(is_array($errors));
 	}
 
-	private function validateDataset($data, $expectedError) {
+	private function confirmValidationFails($data, $expectedError) {
 		$dataSet = ExampleDataset::create();
 		$isValid = $dataSet->isValid($data, $errors);
 		$this->assertFalse($isValid);
@@ -90,8 +90,14 @@ class TestDataset extends TestCase {
 		$this->assertEquals($expectedError["errorMessage"], $errors[$expectedError["fieldName"]]);
 	}
 
+	private function confirmValidationPasses($data, $fieldName) {
+		$dataSet = ExampleDataset::create();
+		$isValid = $dataSet->isValid($data, $errors);
+		$this->assertArrayNotHasKey($fieldName, $errors);		
+	}
+
 	public function testItShouldReportIfANotEmptyFieldIsSetButEmpty() {
-		$this->validateDataset(
+		$this->confirmValidationFails(
 			array(
 				"this-field-cannot-be-empty" => null
 			),
@@ -103,7 +109,7 @@ class TestDataset extends TestCase {
 	}
 
 	public function testItShouldReportIfANotEmptyFieldIsNotSet() {
-		$this->validateDataset(
+		$this->confirmValidationFails(
 			array(),
 			array(
 				"fieldName" => "this-field-cannot-be-empty",
@@ -113,7 +119,7 @@ class TestDataset extends TestCase {
 	}
 
 	public function testItShouldReportIfARequiredFieldIsMissing() {
-		$this->validateDataset(
+		$this->confirmValidationFails(
 			array(),
 			array(
 				"fieldName" => "this-field-must-be-supplied",
@@ -123,24 +129,15 @@ class TestDataset extends TestCase {
 	}
 
 	public function testItShouldNotReportIfAnOptionalFieldIsMissing() {
-		$dataSet = ExampleDataset::create();
-		$isValid = $dataSet->isValid(array(), $errors);
-		$this->assertArrayNotHasKey("this-field-is-optional", $errors);
+		$this->confirmValidationPasses(array(), "this-field-is-optional");
 	}
 
 	public function testItShouldNotAttemptToValidateFieldsThatAreNotRequiredAndWereNotProvided() {
-
-		// Other fields (e.g. dates) would error if it attempted to validate them despite being not provided
-		$dataSet = ExampleDataset::create();
-		$isValid = $dataSet->isValid(array(
-			"this-field-cannot-be-empty" => true,
-			"this-field-must-be-supplied" => true
-		), $errors);
-		$this->assertTrue($isValid);
+		$this->confirmValidationPasses(array(), "this-field-has-a-set-of-allowed-values");
 	}
 
 	public function testItShouldReportIfTheFieldHasASetOfAllowedValuesAndTheSuppliedValueWasNotOneOfThem() {
-		$this->validateDataset(
+		$this->confirmValidationFails(
 			array("this-field-has-a-set-of-allowed-values" => "delta"),
 			array(
 				"fieldName" => "this-field-has-a-set-of-allowed-values",
@@ -150,17 +147,54 @@ class TestDataset extends TestCase {
 	}
 
 	public function testItShouldNotReportIfTheFieldHasASetOfAllowedValuesAndTheSuppliedValueWasOneOfThem() {
-		$dataSet = ExampleDataset::create();
-		$isValid = $dataSet->isValid(array("this-field-has-a-set-of-allowed-values" => "beta"), $errors);
-		$this->assertArrayNotHasKey("this-field-has-a-set-of-allowed-values", $errors);
+		$this->confirmValidationPasses(
+			array("this-field-has-a-set-of-allowed-values" => "beta"),
+			"this-field-has-a-set-of-allowed-values"
+		);
 	}
 
-	public function testItShouldNotReportAnyMessagesAboutAllowedValuesIfTheFieldDoesNotHaveASetOfAllowedValues() {
-		
+	public function testItShouldAllowAValid12HourTimeInTheMorning() {
+		$this->confirmValidationPasses(
+			array("this-field-should-be-a-12-hour-time" => "12:14am"),
+			"this-field-should-be-a-12-hour-time"
+		);
 	}
 
-	public function testItShouldValidate12HourTimes() {
+	public function testItShouldAllowAValid12HourTimeInTheAfternoon() {
+		$this->confirmValidationPasses(
+			array("this-field-should-be-a-12-hour-time" => "12:14pm"),
+			"this-field-should-be-a-12-hour-time"
+		);
+	}
 
+	public function testItShouldReportIfA24HourTimeIsSubmittedAsA12HourTime() {
+		$this->confirmValidationFails(
+			array("this-field-should-be-a-12-hour-time" => "22:12"),
+			array(
+				"fieldName" => "this-field-should-be-a-12-hour-time",
+				"errorMessage" => "Expected a time in the format h:m(am/pm)"
+			)
+		);
+	}
+
+	public function testItShouldReportIfSubmitted12HourTimeHasAnInappropriateSuffix() {
+		$this->confirmValidationFails(
+			array("this-field-should-be-a-12-hour-time" => "10:42bc"),
+			array(
+				"fieldName" => "this-field-should-be-a-12-hour-time",
+				"errorMessage" => "Expected a time in the format h:m(am/pm)"
+			)
+		);
+	}
+
+	public function testItShouldReportIfSubmitted12HourTimeIsTotallyInvalid() {
+		$this->confirmValidationFails(
+			array("this-field-should-be-a-12-hour-time" => "10:42 in the morning"),
+			array(
+				"fieldName" => "this-field-should-be-a-12-hour-time",
+				"errorMessage" => "Expected a time in the format h:m(am/pm)"
+			)
+		);
 	}
 
 	public function testItShouldValidateUKDates() {
