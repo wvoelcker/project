@@ -227,6 +227,23 @@ class TestDataset extends TestCase {
 		);
 	}
 
+	public function testItShouldReportIfASubmittedUKFormatDateUsedDashesInsteadOfSlashes() {
+		$this->confirmValidationFails(
+			array("this-field-should-be-a-uk-format-date" => "30-12-2018"),
+			array(
+				"fieldName" => "this-field-should-be-a-uk-format-date",
+				"errorMessage" => "Not a date in the format dd/mm/yyyy"
+			)
+		);
+	}
+
+	public function testItShouldAllowValidUKFormatDates() {
+		$this->confirmValidationPasses(
+			array("this-field-should-be-a-uk-format-date" => "30/12/2018"),
+			"this-field-should-be-a-uk-format-date"
+		);
+	}
+
 	public function testItShouldValidateMySQLDates() {
 
 	}
