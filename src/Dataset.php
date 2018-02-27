@@ -18,7 +18,7 @@ abstract class Dataset {
 		$foundErrors = array();
 
 		if (empty($this->fields)) {
-			throw new Exception("No valid definitions have been supplied");
+			throw new \Exception("No valid definitions have been supplied");
 		}
 
 		// For some reason, defaulting to an array doesn't work as expected (instead, the variable defaults to null).
