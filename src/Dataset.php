@@ -98,7 +98,7 @@ abstract class Dataset {
 	}
 
 	protected function validate12HrTime($value) {
-		if (!preg_match("/^([0-9]+):([0-9]+)([ap]m)$/", $time, $m)) {
+		if (!preg_match("/^([0-9]+):([0-9]+)([ap]m)$/", $value, $m)) {
 			return "Expected a time in the format h:m(am/pm)";
 		}
 		if ($m[1] > 12) {
