@@ -72,16 +72,73 @@ class TestDataset extends TestCase {
 		$dataSet->isValid(array(), $errors);
 	}
 
-	public function testItShouldReportIfANotEmptyFieldIsEmpty() {
+	public function testItShouldSetErrorsToAnArrayEvenIfThereWerentAny() {
+		$dataSet = ExampleDataset::create();
+		$isValid = $dataSet->isValid(array(
+			"this-field-cannot-be-empty" => true,
+			"this-field-must-be-supplied" => true
+		), $errors);
+		$this->assertTrue($isValid);
+		$this->assertTrue(is_array($errors));
+	}
 
+	private function validateDataset($data, $expectedError) {
+		$dataSet = ExampleDataset::create();
+		$isValid = $dataSet->isValid($data, $errors);
+		$this->assertFalse($isValid);
+		$this->assertArrayHasKey($expectedError["fieldName"], $errors);
+		$this->assertEquals($expectedError["errorMessage"], $errors[$expectedError["fieldName"]]);
+	}
+
+	public function testItShouldReportIfANotEmptyFieldIsSetButEmpty() {
+		$this->validateDataset(
+			array(
+				"this-field-cannot-be-empty" => null
+			),
+			array(
+				"fieldName" => "this-field-cannot-be-empty",
+				"errorMessage" => "This field should not be empty"
+			)
+		);
+	}
+
+	public function testItShouldReportIfANotEmptyFieldIsNotSet() {
+		$this->validateDataset(
+			array(),
+			array(
+				"fieldName" => "this-field-cannot-be-empty",
+				"errorMessage" => "This field should not be empty"
+			)
+		);
 	}
 
 	public function testItShouldReportIfARequiredFieldIsMissing() {
+		$this->validateDataset(
+			array(),
+			array(
+				"fieldName" => "this-field-must-be-supplied",
+				"errorMessage" => "This field is required"
+			)
+		);
+	}
 
+	public function testItShouldNotReportIfAnOptionalFieldIsMissing() {
+		$dataSet = ExampleDataset::create();
+		$isValid = $dataSet->isValid(array(), $errors);
+		$this->assertArrayNotHasKey("this-field-is-optional", $errors);
 	}
 
 	public function testItShouldNotAttemptToValidateFieldsThatAreNotRequiredAndWereNotProvided() {
 
+		// Other fields (e.g. dates) would error if it attempted to validate them despite being not provided
+		$dataSet = ExampleDataset::create();
+		$isValid = $dataSet->isValid(array(
+			"this-field-cannot-be-empty" => true,
+			"this-field-must-be-supplied" => true
+		), $errors);
+		$this->assertTrue($isValid);
+		$this->assertTrue(is_array($errors));
+		$this->assertEmpty($errors);
 	}
 
 	public function testItShouldReportIfTheFieldHasASetOfAllowedValuesAndTheSuppliedValueWasNotOneOfThem() {
