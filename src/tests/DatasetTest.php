@@ -291,10 +291,6 @@ class TestDataset extends TestCase {
 		);
 	}
 
-	public function testItShouldValidateMySQLDates() {
-
-	}
-
 	public function testItShouldValidateISO8601Dates() {
 
 	}
