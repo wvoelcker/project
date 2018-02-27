@@ -291,8 +291,58 @@ class TestDataset extends TestCase {
 		);
 	}
 
-	public function testItShouldValidateISO8601Dates() {
+	public function testItShouldReportIfASubmittedISO8601DateWasAUKDate() {
+		$this->confirmValidationFails(
+			array("this-field-should-be-a-iso-8601-format-date" => "2018/12/30"),
+			array(
+				"fieldName" => "this-field-should-be-a-iso-8601-format-date",
+				"errorMessage" => "Not a date in the format yyyy-mm-ddThh:mm:ss(+/-hh:mm)"
+			)
+		);
+	}
 
+	public function testItShouldReportIfASubmittedISO8601DateWasALongFormatDate() {
+		$this->confirmValidationFails(
+			array("this-field-should-be-a-iso-8601-format-date" => "30th December 2018"),
+			array(
+				"fieldName" => "this-field-should-be-a-iso-8601-format-date",
+				"errorMessage" => "Not a date in the format yyyy-mm-ddThh:mm:ss(+/-hh:mm)"
+			)
+		);
+	}
+
+	public function testItShouldReportIfASubmittedISO8601DateWasAMySQLDate() {
+		$this->confirmValidationFails(
+			array("this-field-should-be-a-iso-8601-format-date" => "2018-12-30"),
+			array(
+				"fieldName" => "this-field-should-be-a-iso-8601-format-date",
+				"errorMessage" => "Not a date in the format yyyy-mm-ddThh:mm:ss(+/-hh:mm)"
+			)
+		);
+	}
+
+	public function testItShouldReportIfASubmittedISO8601DateWasAMySQLDateTime() {
+		$this->confirmValidationFails(
+			array("this-field-should-be-a-iso-8601-format-date" => "2018-12-30 15:19:21"),
+			array(
+				"fieldName" => "this-field-should-be-a-iso-8601-format-date",
+				"errorMessage" => "Not a date in the format yyyy-mm-ddThh:mm:ss(+/-hh:mm)"
+			)
+		);
+	}
+
+	public function testItShouldPassASubmittedISO8601DateWithoutTimezone() {
+		$this->confirmValidationPasses(
+			array("this-field-should-be-a-iso-8601-format-date" => "2018-12-30T15:19:21"),
+			"this-field-should-be-a-iso-8601-format-date"
+		);
+	}
+
+	public function testItShouldPassASubmittedISO8601DateWithTimezone() {
+		$this->confirmValidationPasses(
+			array("this-field-should-be-a-iso-8601-format-date" => "2018-12-30T15:19:21+00:00"),
+			"this-field-should-be-a-iso-8601-format-date"
+		);
 	}
 
 	public function testItShouldValidateEmailAddresses() {
