@@ -244,6 +244,53 @@ class TestDataset extends TestCase {
 		);
 	}
 
+	public function testItShouldReportIfASubmittedMySQLFormatDateWasInUKFormat() {
+		$this->confirmValidationFails(
+			array("this-field-should-be-a-mysql-format-date" => "30/12/2018"),
+			array(
+				"fieldName" => "this-field-should-be-a-mysql-format-date",
+				"errorMessage" => "Not a date in the format yyyy-mm-dd"
+			)
+		);
+	}
+
+	public function testItShouldReportIfASubmittedMySQLFormatDateWasInUSFormat() {
+		$this->confirmValidationFails(
+			array("this-field-should-be-a-mysql-format-date" => "12/30/2018"),
+			array(
+				"fieldName" => "this-field-should-be-a-mysql-format-date",
+				"errorMessage" => "Not a date in the format yyyy-mm-dd"
+			)
+		);
+	}
+
+	public function testItShouldReportIfASubmittedMySQLFormatDateWasInLongFormat() {
+		$this->confirmValidationFails(
+			array("this-field-should-be-a-mysql-format-date" => "30th of December 2018"),
+			array(
+				"fieldName" => "this-field-should-be-a-mysql-format-date",
+				"errorMessage" => "Not a date in the format yyyy-mm-dd"
+			)
+		);
+	}
+
+	public function testItShouldReportIfASubmittedUKFormatDateUsedSlashesInsteadOfDashes() {
+		$this->confirmValidationFails(
+			array("this-field-should-be-a-mysql-format-date" => "2018/12/30"),
+			array(
+				"fieldName" => "this-field-should-be-a-mysql-format-date",
+				"errorMessage" => "Not a date in the format yyyy-mm-dd"
+			)
+		);
+	}
+
+	public function testItShouldAllowValidMySQLFormatDates() {
+		$this->confirmValidationPasses(
+			array("this-field-should-be-a-mysql-format-date" => "2018-12-30"),
+			"this-field-should-be-a-mysql-format-date"
+		);
+	}
+
 	public function testItShouldValidateMySQLDates() {
 
 	}
