@@ -16,7 +16,7 @@ class ExampleDataset extends Dataset {
 				"required" => false
 			),
 			"this-field-has-a-set-of-allowed-values" => array(
-				"allowedValues" => array("a", "b", "c")
+				"allowedValues" => array("alpha", "beta", "gamma")
 			),
 			"this-field-should-be-a-12-hour-time" => array(
 				"validate12HrTime" => true
@@ -53,7 +53,7 @@ class TestDataset extends TestCase {
 			"this-field-cannot-be-empty" => array("notempty" => true),
 			"this-field-must-be-supplied" => array("required" => true),
 			"this-field-is-optional" => array("required" => false),
-			"this-field-has-a-set-of-allowed-values" => array("allowedValues" => array("a", "b", "c")),
+			"this-field-has-a-set-of-allowed-values" => array("allowedValues" => array("aalpha", "beta", "gamma")),
 			"this-field-should-be-a-12-hour-time" => array("validate12HrTime" => true),
 			"this-field-should-be-a-uk-format-date" => array("validateDateUK" => true),
 			"this-field-should-be-a-mysql-format-date" => array("validateDateMySQL" => true),
@@ -137,16 +137,22 @@ class TestDataset extends TestCase {
 			"this-field-must-be-supplied" => true
 		), $errors);
 		$this->assertTrue($isValid);
-		$this->assertTrue(is_array($errors));
-		$this->assertEmpty($errors);
 	}
 
 	public function testItShouldReportIfTheFieldHasASetOfAllowedValuesAndTheSuppliedValueWasNotOneOfThem() {
-
+		$this->validateDataset(
+			array("this-field-has-a-set-of-allowed-values" => "delta"),
+			array(
+				"fieldName" => "this-field-has-a-set-of-allowed-values",
+				"errorMessage" => "This field should have one of the following values: {alpha, beta, gamma}"
+			)
+		);
 	}
 
 	public function testItShouldNotReportIfTheFieldHasASetOfAllowedValuesAndTheSuppliedValueWasOneOfThem() {
-		
+		$dataSet = ExampleDataset::create();
+		$isValid = $dataSet->isValid(array("this-field-has-a-set-of-allowed-values" => "beta"), $errors);
+		$this->assertArrayNotHasKey("this-field-has-a-set-of-allowed-values", $errors);
 	}
 
 	public function testItShouldNotReportAnyMessagesAboutAllowedValuesIfTheFieldDoesNotHaveASetOfAllowedValues() {
