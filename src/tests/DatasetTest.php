@@ -33,7 +33,7 @@ class ExampleDataset extends Dataset {
 			"this-field-should-be-an-email-address" => array(
 				"validateEmailAddress" => true
 			),
-			"this-field-has-custom-validation-to-check-if-it-is-a-digit" => array(
+			"this-field-has-custom-validation" => array(
 				"customValidation" => "ctype_digit"
 			),
 		);
@@ -59,7 +59,7 @@ class TestDataset extends TestCase {
 			"this-field-should-be-a-mysql-format-date" => array("validateDateMySQL" => true),
 			"this-field-should-be-a-iso-8601-format-date" => array("validateDateISO8601" => true),
 			"this-field-should-be-an-email-address" => array("validateEmailAddress" => true),
-			"this-field-has-custom-validation-to-check-if-it-is-a-digit" => array("customValidation" => "ctype_digit"),
+			"this-field-has-custom-validation" => array("customValidation" => "ctype_digit"),
 		), $fields);
 	}
 
@@ -345,12 +345,48 @@ class TestDataset extends TestCase {
 		);
 	}
 
-	public function testItShouldValidateEmailAddresses() {
-
+	public function testItShouldReportAnObviouslyInvalidEmailAddress() {
+		$this->confirmValidationFails(
+			array("this-field-should-be-an-email-address" => "not an email address"),
+			array(
+				"fieldName" => "this-field-should-be-an-email-address",
+				"errorMessage" => "Not a valid email address"
+			)
+		);
 	}
 
-	public function testItShouldDoAnyCustomValidation() {
+	public function testItShouldReportALessObviouslyInvalidEmailAddress() {
+		$this->confirmValidationFails(
+			array("this-field-should-be-an-email-address" => "#@%^%#$@#$@#.com"),
+			array(
+				"fieldName" => "this-field-should-be-an-email-address",
+				"errorMessage" => "Not a valid email address"
+			)
+		);
+	}
 
+	public function testItShouldAllowAnObviouslyValidEmailAddress() {
+		$this->confirmValidationPasses(
+			array("this-field-should-be-an-email-address" => "test@example.com"),
+			"this-field-should-be-an-email-address"
+		);
+	}
+
+	public function testItShouldPassAnyCustomValidationWhereTheDataIsValid() {
+		$this->confirmValidationPasses(
+			array("this-field-has-custom-validation" => "9827"),
+			"this-field-has-custom-validation"
+		);
+	}
+
+	public function testItShouldReportAnyCustomValidationWhereTheDataIsNotValid() {
+		$this->confirmValidationFails(
+			array("this-field-has-custom-validation" => "not-digits"),
+			array(
+				"fieldName" => "this-field-has-custom-validation",
+				"errorMessage" => "This field is invalid"
+			)
+		);
 	}
 
 }
