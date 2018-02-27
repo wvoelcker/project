@@ -112,17 +112,11 @@ abstract class Dataset {
 	}
 
 	protected function validateDateUK($value) {
-		$result = preg_match(self::RGX_UKDATE, $value, $m);
-
-		if ($result == true) {
-			if (checkdate($m[2], $m[1], $m[3])) {
-				return true;
-			} else {
-				return "Not a valid date";
-			}
+		if (preg_match(self::RGX_UKDATE, $value, $m) and checkdate($m[2], $m[1], $m[3])) {
+			return true;
 		}
 
-		return "Not a date in the format dd-mm-yyyy";
+		return "Not a date in the format dd/mm/yyyy";
 	}
 
 	protected function validateDateMySQL($value) {

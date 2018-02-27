@@ -199,20 +199,20 @@ class TestDataset extends TestCase {
 
 	public function testItShouldReportIfASubmittedUKFormatDateWasInMySQLFormat() {
 		$this->confirmValidationFails(
-			array("this-field-should-be-a-uk-format-date" => "2018-02-27"),
+			array("this-field-should-be-a-uk-format-date" => "2018/02/27"),
 			array(
 				"fieldName" => "this-field-should-be-a-uk-format-date",
-				"errorMessage" => "Not a date in the format dd-mm-yyyy"
+				"errorMessage" => "Not a date in the format dd/mm/yyyy"
 			)
 		);
 	}
 
 	public function testItShouldReportIfASubmittedUKFormatDateWasInUSFormat() {
 		$this->confirmValidationFails(
-			array("this-field-should-be-a-uk-format-date" => "12-30-2018"),
+			array("this-field-should-be-a-uk-format-date" => "12/30/2018"),
 			array(
 				"fieldName" => "this-field-should-be-a-uk-format-date",
-				"errorMessage" => "Not a date in the format dd-mm-yyyy"
+				"errorMessage" => "Not a date in the format dd/mm/yyyy"
 			)
 		);
 	}
@@ -222,7 +222,7 @@ class TestDataset extends TestCase {
 			array("this-field-should-be-a-uk-format-date" => "30th of December 2018"),
 			array(
 				"fieldName" => "this-field-should-be-a-uk-format-date",
-				"errorMessage" => "Not a date in the format dd-mm-yyyy"
+				"errorMessage" => "Not a date in the format dd/mm/yyyy"
 			)
 		);
 	}
