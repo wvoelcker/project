@@ -199,10 +199,30 @@ class TestDomainObject extends TestCase {
 	}
 
 	public function testItShouldSetAnyValidFieldsInAnArrayWhenPassedToSetAnyIn() {
-
+		$object = ExampleDomainObject::create(array(
+			"id" => "123",
+			"size" => "medium",
+			"itemId" => "abc123",
+		));
+		$object->setAnyIn(array("size" => "large", "id" => "456", "customerName" => "Jo Bloggs"));
+		$this->assertEquals("large", $object->get("size"));
+		$this->assertEquals("456", $object->get("id"));
 	}
 
 	public function testItShouldIgnoreInvalidFieldsInAnArrayWhenPassedToSetAnyIn() {
+		$object = ExampleDomainObject::create(array(
+			"id" => "123",
+			"size" => "medium",
+			"itemId" => "abc123",
+		));
+		$object->setAnyIn(array("size" => "large", "id" => "456", "customerName" => "Jo Bloggs"));
 
+		try {
+			$customerName = $object->get("customerName");
+		} catch (\Exception $e) {
+			$customerName = null;
+		}
+
+		$this->assertEmpty($customerName);
 	}
 }
