@@ -38,13 +38,15 @@ class TestEnvironment extends TestCase {
 		$this->assertEquals("exampleValue1", $environment->get("exampleKey1"));
 		$this->assertEquals("exampleValue2", $environment->get("exampleKey2"));
 		$this->assertTrue($environment instanceof ExampleEnvironment);
+		unlink($configFile1);
+		unlink($configFile2);
 	}
 
 	public function testItShouldAllowConfiguringWithSomeConfigFilesAndSomeNonConfigFileMethod() {
-		$configFile2 = $this->makeTestConfigFile(array("exampleKey2" => "exampleValue2"));
+		$configFile = $this->makeTestConfigFile(array("exampleKey2" => "exampleValue2"));
 		$environment = ExampleEnvironment::create(
 			array("exampleKey1" => "exampleValue1"),
-			array($configFile2),
+			array($configFile),
 			function() {
 				return true;
 			}
@@ -52,6 +54,7 @@ class TestEnvironment extends TestCase {
 		$this->assertEquals("exampleValue1", $environment->get("exampleKey1"));
 		$this->assertEquals("exampleValue2", $environment->get("exampleKey2"));
 		$this->assertTrue($environment instanceof ExampleEnvironment);
+		unlink($configFile);
 	}
 
 	private function makeTestConfigFile($data) {
