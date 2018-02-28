@@ -104,7 +104,7 @@ class TestDomainObject extends TestCase {
 		$this->assertEquals("123", $object->get("id"));
 	}
 
-	public function testItShouldIncludeAllPublicFieldsWhenRunningGetForPublic() {
+	public function testItShouldIncludeAllPublicFieldsAndNoPrivateFieldsWhenRunningGetForPublic() {
 		$object = ExampleDomainObject::create(array(
 			"id" => "123",
 			"size" => "medium",
@@ -116,14 +116,21 @@ class TestDomainObject extends TestCase {
 		$this->assertEquals(2, count((array)$publicObject));
 		$this->assertObjectHasAttribute("size", $publicObject);
 		$this->assertObjectHasAttribute("name", $publicObject);
+		$this->assertEquals("Test Object", $publicObject->name);
 	}
 
 	public function testItShouldIncludePublicFieldsWhichAreNotSetWhenRunningGetForPublicAndTheValueShouldBeNull() {
+		$object = ExampleDomainObject::create(array(
+			"id" => "123",
+			"size" => "medium",
+			"itemId" => "abc123",
+		));
+		$publicObject = $object->getForPublic();
 
-	}
-
-	public function testItShouldOmitAllPrivateFieldsWhenRunningGetForPublic() {
-		
+		$this->assertEquals(2, count((array)$publicObject));
+		$this->assertObjectHasAttribute("size", $publicObject);
+		$this->assertObjectHasAttribute("name", $publicObject);
+		$this->assertNull($publicObject->name);
 	}
 
 	public function testItShouldConfirmThatAValidFieldIsValid() {
