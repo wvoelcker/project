@@ -71,7 +71,7 @@ abstract class DomainObject {
 
 	public function setAnyIn($dataSet) {
 		foreach ($dataSet as $key => $value) {
-			if ($this->isValidField($key) and !empty($this->fields[$key]["allowDirectChange"])) {
+			if ($this->isValidField($key)) {
 				$this->set($key, $value);
 			}
 		}
