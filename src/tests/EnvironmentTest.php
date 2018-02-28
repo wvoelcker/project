@@ -28,9 +28,13 @@ class TestEnvironment extends TestCase {
 	public function testItShouldAllowConfiguringWithOnlyConfigFiles() {
 		$configFile1 = $this->makeTestConfigFile(array("exampleKey1" => "exampleValue1"));
 		$configFile2 = $this->makeTestConfigFile(array("exampleKey2" => "exampleValue2"));
-		$environment = ExampleEnvironment::create(array(), array($configFile1, $configFile2), function() {
-			return true;
-		});
+		$environment = ExampleEnvironment::create(
+			array(),
+			array($configFile1, $configFile2),
+			function() {
+				return true;
+			}
+		);
 		$this->assertEquals("exampleValue1", $environment->get("exampleKey1"));
 		$this->assertEquals("exampleValue2", $environment->get("exampleKey2"));
 		$this->assertTrue($environment instanceof ExampleEnvironment);
@@ -38,9 +42,13 @@ class TestEnvironment extends TestCase {
 
 	public function testItShouldAllowConfiguringWithSomeConfigFilesAndSomeNonConfigFileMethod() {
 		$configFile2 = $this->makeTestConfigFile(array("exampleKey2" => "exampleValue2"));
-		$environment = ExampleEnvironment::create(array("exampleKey1" => "exampleValue1"), array($configFile2), function() {
-			return true;
-		});
+		$environment = ExampleEnvironment::create(
+			array("exampleKey1" => "exampleValue1"),
+			array($configFile2),
+			function() {
+				return true;
+			}
+		);
 		$this->assertEquals("exampleValue1", $environment->get("exampleKey1"));
 		$this->assertEquals("exampleValue2", $environment->get("exampleKey2"));
 		$this->assertTrue($environment instanceof ExampleEnvironment);
