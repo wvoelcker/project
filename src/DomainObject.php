@@ -64,7 +64,12 @@ abstract class DomainObject {
 
 	public function set($key, $value) {
 		$this->confirmValidField($key);
-		$this->data[$key] = $value;
+
+		$newData = array($key => $value) + $this->data;
+		if (!$this->dataSet->isValid($newData, $validationErrors)) {
+			throw new \Exception("Problems with supplied data: ".json_encode($validationErrors));
+		}
+		$this->data = $newData;
 
 		return $this;
 	}
