@@ -174,6 +174,30 @@ class TestDomainObject extends TestCase {
 		$this->assertEquals("large", $object->get("size"));
 	}
 
+    /**
+     * @expectedException Exception
+     * @expectedExceptionMessage Problems with supplied data: {"size":"This field should have one of the following values: {small, medium, large}"}
+     */
+	public function testItShouldThrowAnExceptionWhenAttemptingToSetAValidFieldToAnInvalidValue() {
+		$object = ExampleDomainObject::create(array(
+			"id" => "123",
+			"size" => "medium",
+			"itemId" => "abc123",
+		));
+		$object->set("size", "x-small");
+	}
+
+	public function testItShouldReturnAReferenceToItselfAfterCallingSet() {
+		$object = ExampleDomainObject::create(array(
+			"id" => "123",
+			"size" => "medium",
+			"itemId" => "abc123",
+		));
+		$output = $object->set("size", "large");
+
+		$this->assertEquals($output, $object);
+	}
+
 	public function testItShouldSetAnyValidFieldsInAnArrayWhenPassedToSetAnyIn() {
 
 	}
