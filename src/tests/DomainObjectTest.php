@@ -7,11 +7,18 @@ class ExampleDataset extends Dataset {
 	protected function setUp() {
 		$this->fields = array(
 			"id" => array(
-				"customValidation" => "ctype_digit"
+				"customValidation" => "ctype_digit",
 			),
 			"size" => array(
 				"allowedValues" => array("small", "medium", "large"),
-				"required" => true
+				"required" => true,
+				"visibility" => "public",
+			),
+			"name" => array(
+				"visibility" => "public",
+			),
+			"itemId" => array(
+				"customValidation" => "is_string",
 			)
 		);
 	}
@@ -98,7 +105,17 @@ class TestDomainObject extends TestCase {
 	}
 
 	public function testItShouldIncludeAllPublicFieldsWhenRunningGetForPublic() {
+		$object = ExampleDomainObject::create(array(
+			"id" => "123",
+			"size" => "medium",
+			"name" => "Test Object",
+			"itemId" => "abc123",
+		));
+		$publicObject = $object->getForPublic();
 
+		$this->assertEquals(2, count((array)$publicObject));
+		$this->assertObjectHasAttribute("size", $publicObject);
+		$this->assertObjectHasAttribute("name", $publicObject);
 	}
 
 	public function testItShouldIncludePublicFieldsWhichAreNotSetWhenRunningGetForPublicAndTheValueShouldBeNull() {
