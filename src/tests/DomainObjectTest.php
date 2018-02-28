@@ -134,19 +134,44 @@ class TestDomainObject extends TestCase {
 	}
 
 	public function testItShouldConfirmThatAValidFieldIsValid() {
-
+		$object = ExampleDomainObject::create(array(
+			"id" => "123",
+			"size" => "medium",
+			"itemId" => "abc123",
+		));
+		$this->assertTrue($object->isValidField("id"));
 	}
 
 	public function testItShouldConfirmThatAnInvalidFieldIsInvalid() {
-
+		$object = ExampleDomainObject::create(array(
+			"id" => "123",
+			"size" => "medium",
+			"itemId" => "abc123",
+		));
+		$this->assertFalse($object->isValidField("customerName"));
 	}
 
+    /**
+     * @expectedException Exception
+     * @expectedExceptionMessage Invalid field name 'customerName'
+     */
 	public function testItShouldThrowAnExceptionWhenAttemptingToSetAnInvalidField() {
-
+		$object = ExampleDomainObject::create(array(
+			"id" => "123",
+			"size" => "medium",
+			"itemId" => "abc123",
+		));
+		$object->set("customerName", "Jo Bloggs");
 	}
 
 	public function testItShouldSetAValidField() {
-
+		$object = ExampleDomainObject::create(array(
+			"id" => "123",
+			"size" => "medium",
+			"itemId" => "abc123",
+		));
+		$object->set("size", "large");
+		$this->assertEquals("large", $object->get("size"));
 	}
 
 	public function testItShouldSetAnyValidFieldsInAnArrayWhenPassedToSetAnyIn() {
