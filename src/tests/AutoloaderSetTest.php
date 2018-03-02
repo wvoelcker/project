@@ -1,4 +1,5 @@
 <?php
+namespace WillV\Project\Tests\AutoloaderSetTest;
 use PHPUnit\Framework\TestCase;
 use WillV\Project\AutoloaderSet;
 
@@ -31,7 +32,7 @@ class AutoloaderSetTest extends TestCase {
 
     /**
      * @expectedException Error
-     * @expectedExceptionMessage Class 'SomeClass' not found
+     * @expectedExceptionMessage SomeClass' not found
      */
 	public function testItShouldNotAutoloadClassesBeforeBeingRegistered() {
 		$isAutoloaded = $this->createAutoloaderSetAndCreateTestClass(false);
@@ -40,7 +41,7 @@ class AutoloaderSetTest extends TestCase {
 
     /**
      * @expectedException Error
-     * @expectedExceptionMessage Class 'SomeClass' not found
+     * @expectedExceptionMessage SomeClass' not found
      */
 	public function testItShouldAutoloadClassesAfterBeingRegistered() {
 		$isAutoloaded = $this->createAutoloaderSetAndCreateTestClass(true);

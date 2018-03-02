@@ -1,4 +1,5 @@
 <?php
+namespace WillV\Project\Tests\ContactListTest;
 use PHPUnit\Framework\TestCase;
 use WillV\Project\ContactList;
 

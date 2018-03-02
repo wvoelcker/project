@@ -1,4 +1,5 @@
 <?php
+namespace WillV\Project\Tests\ArrayFiltererTest;
 use PHPUnit\Framework\TestCase;
 use WillV\Project\ArrayFilterer;
 

@@ -1,4 +1,5 @@
 <?php
+namespace WillV\Project\Tests\EnvironmentListTest;
 use PHPUnit\Framework\TestCase;
 use WillV\Project\Environment;
 use WillV\Project\EnvironmentList;

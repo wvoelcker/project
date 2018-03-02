@@ -1,4 +1,5 @@
 <?php
+namespace WillV\Project\Tests\DatasetTest;
 use PHPUnit\Framework\TestCase;
 use WillV\Project\Dataset;
 

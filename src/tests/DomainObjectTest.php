@@ -1,4 +1,5 @@
 <?php
+namespace WillV\Project\Tests\DomainObjectTest;
 use PHPUnit\Framework\TestCase;
 use WillV\Project\Dataset;
 use WillV\Project\DomainObject;
@@ -36,13 +37,13 @@ class ExampleDatasetWithNoIdField extends Dataset {
 
 class ExampleDomainObject extends DomainObject {
 	protected function setUp() {
-		$this->dataSetName = "ExampleDataset";
+		$this->dataSetName = __NAMESPACE__."\ExampleDataset";
 	}
 }
 
 class ExampleDomainObjectWithNoIdField extends DomainObject {
 	protected function setUp() {
-		$this->dataSetName = "ExampleDatasetWithNoIdField";
+		$this->dataSetName = __NAMESPACE__."\ExampleDatasetWithNoIdField";
 	}
 }
 

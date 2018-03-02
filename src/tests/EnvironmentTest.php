@@ -1,7 +1,7 @@
 <?php
+namespace WillV\Project\Tests\EnvionmentTest;
 use PHPUnit\Framework\TestCase;
 use WillV\Project\Environment;
-
 
 class ExampleEnvironment extends Environment {
 	protected function setUp() {

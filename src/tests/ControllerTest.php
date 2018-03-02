@@ -1,4 +1,5 @@
 <?php
+namespace WillV\Project\Tests\ControllerTest;
 use PHPUnit\Framework\TestCase;
 use WillV\Project\Controller;
 use WillV\Project\Environment;
