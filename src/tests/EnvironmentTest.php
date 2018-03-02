@@ -68,13 +68,29 @@ class TestEnvironment extends TestCase {
 		return $filePath;
 	}
 
-
+    /**
+     * @expectedException Exception
+     * @expectedExceptionMessage Unexpected number of arguments
+     */
 	public function testItShouldThrowAnExceptionIfOnlyOneArgumentWasProvided() {
-
+		$environment = ExampleEnvironment::create(
+			array("exampleKey1" => "exampleValue1")
+		);
 	}
 
-	public function testItShouldThrowAnExceptionIfMoreThanTwoArgumentsWereProvided() {
-		
+    /**
+     * @expectedException Exception
+     * @expectedExceptionMessage Unexpected number of arguments
+     */
+	public function testItShouldThrowAnExceptionIfMoreThanThreeArgumentsWereProvided() {
+		$environment = ExampleEnvironment::create(
+			array("exampleKey1" => "exampleValue1"),
+			array("/dev/null"),
+			function() {
+				return true;
+			},
+			"Extra argument"
+		);
 	}
 
 	public function testItShouldThrowAnExceptionIfANonExistentConfigFileWasProvided() {
