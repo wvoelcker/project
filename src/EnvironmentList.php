@@ -25,7 +25,7 @@ abstract class EnvironmentList {
 
 	public function getEnvironment($environmentName) {
 		if (!isset($this->environments[$environmentName])) {
-			throw new Exception("Environment '".$environmentName."' not found");
+			throw new \Exception("Environment '".$environmentName."' not found");
 		}
 		return $this->environments[$environmentName];
 	}
