@@ -12,6 +12,16 @@ class ExampleEnvironment extends Environment {
 	}
 }
 
+class ExampleEnvironmentWithInvalidRequiredFields extends Environment {
+	protected function setUp() {
+		$this->requiredFields = (object)array(
+			"exampleKey1" => true,
+			"exampleKey2" => true
+		);
+	}
+}
+
+
 class TestEnvironment extends TestCase {
 	public function testItShouldAllowConfiguringWithOutConfigFiles() {
 		$environment = ExampleEnvironment::create(array(
@@ -93,20 +103,64 @@ class TestEnvironment extends TestCase {
 		);
 	}
 
+    /**
+     * @expectedException Exception
+     * @expectedExceptionMessage Data file not found: /does/not/exist.json
+     */
 	public function testItShouldThrowAnExceptionIfANonExistentConfigFileWasProvided() {
-		
+		$environment = ExampleEnvironment::create(
+			array("exampleKey1" => "exampleValue1"),
+			array("/does/not/exist.json"),
+			function() {
+				return true;
+			}
+		);
 	}
 
+    /**
+     * @expectedException Exception
+     * @expectedExceptionMessage requiredFields is not an array
+     */
 	public function testItShouldThrowAnExceptionIfRequiredFieldsIsSetToSomethingOtherThanAnArray() {
-		
+		$environment = ExampleEnvironmentWithInvalidRequiredFields::create(
+			array("exampleKey1" => "exampleValue1", "exampleKey2" => "exampleValue2"),
+			function() {
+				return true;
+			}
+		);
 	}
 
+    /**
+     * @expectedException Exception
+     * @expectedExceptionMessage Missing fields: {exampleKey2}
+     */
 	public function testItShouldThrowAnExceptionIfSomeRequiredDataWasNotProvided() {
-		
+		$environment = ExampleEnvironment::create(
+			array("exampleKey1" => "exampleValue1"),
+			function() {
+				return true;
+			}
+		);
 	}
 
 	public function testItShouldCorrectlyDetermineIfItIsActive() {
+		$environment = ExampleEnvironment::create(
+			array("exampleKey1" => "exampleValue1", "exampleKey2" => "exampleValue2"),
+			function() {
+				return true;
+			}
+		);
+		$this->assertTrue($environment->isActive());
+	}
 
+	public function testItShouldCorrectlyDetermineIfItIsNotActive() {
+		$environment = ExampleEnvironment::create(
+			array("exampleKey1" => "exampleValue1", "exampleKey2" => "exampleValue2"),
+			function() {
+				return false;
+			}
+		);
+		$this->assertFalse($environment->isActive());
 	}
 
 	public function testItShouldThrowAnExceptionIfAttemptingToGetDataThatWasNotSet() {
