@@ -21,6 +21,8 @@ abstract class EnvironmentList {
 				return $environment;
 			}
 		}
+
+		return null;
 	}
 
 	public function getEnvironment($environmentName) {
