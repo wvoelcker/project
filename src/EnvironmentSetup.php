@@ -50,7 +50,7 @@ abstract class EnvironmentSetup {
 			throw new \Exception("Please supply an environment list first");
 		}
 
-		$activeEnvironment = $this->environmentList->findActiveEnvironment();
+		$activeEnvironment = $this->environmentList->getActiveEnvironment();
 		if (empty($activeEnvironment)) {
 			throw new \Exception("No active environment found");
 		}

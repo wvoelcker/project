@@ -15,7 +15,7 @@ abstract class EnvironmentList {
 		$this->environments[$environmentName] = $environment;
 	}
 
-	public function findActiveEnvironment() {
+	public function getActiveEnvironment() {
 		foreach ($this->environments as $environment) {
 			if ($environment->isActive()) {
 				return $environment;
