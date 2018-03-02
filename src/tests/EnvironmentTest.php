@@ -163,11 +163,32 @@ class TestEnvironment extends TestCase {
 		$this->assertFalse($environment->isActive());
 	}
 
+    /**
+     * @expectedException Exception
+     * @expectedExceptionMessage Data key 'exampleKey3' not set
+     */
 	public function testItShouldThrowAnExceptionIfAttemptingToGetDataThatWasNotSet() {
+		$environment = ExampleEnvironment::create(
+			array("exampleKey1" => "exampleValue1", "exampleKey2" => "exampleValue2"),
+			function() {
+				return true;
+			}
+		);
 
+		$environment->get("exampleKey3");
 	}
 
 	public function testItShouldReturnDataThatWasSetWhenCallingGet() {
+		$environment = ExampleEnvironment::create(
+			array("exampleKey1" => "exampleValue1", "exampleKey2" => "exampleValue2"),
+			function() {
+				return true;
+			}
+		);
 
+		$this->assertEquals(
+			$environment->get("exampleKey2"),
+			"exampleValue2"
+		);
 	}
 }
