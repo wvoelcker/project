@@ -93,7 +93,7 @@ class TestJSONResponse extends TestCase {
     * @runInSeparateProcess
     */
 	public function testItShouldSendTheCorrectCustomHeaders() {
-		if (!function_exists("xdebug_get_headersAA")) {
+		if (!function_exists("xdebug_get_headers")) {
 			$this->markTestSkipped("XDebug is not available, so not able to verify headers");
 		}
 		$response = JSONResponse::createFromValidationErrors(array("example-field" => "This field was invalid"));
@@ -108,15 +108,61 @@ class TestJSONResponse extends TestCase {
 		$this->assertTrue(in_array("X-TEST-HEADER: test-header-value", $headersSent));
 	}
 
-	public function testItShouldSendTheCorrectStatusCode() {
 
+    /**
+    * @runInSeparateProcess
+    */
+	public function testItShouldSendTheCorrectStatusCodeForValidationErrors() {
+		$response = JSONResponse::createFromValidationErrors(array("example-field" => "This field was invalid"));
+
+		ob_start();
+		$response->send();
+		ob_end_clean();
+
+		$this->assertEquals(400, http_response_code());
 	}
 
+    /**
+    * @runInSeparateProcess
+    */
+	public function testItShouldSendTheSpecifiedStatusCode() {
+		$response = JSONResponse::create(array("message" => "You are not allowed to access that response"), 403);
+
+		ob_start();
+		$response->send();
+		ob_end_clean();
+
+		$this->assertEquals(403, http_response_code());
+	}
+
+    /**
+    * @runInSeparateProcess
+    */
 	public function testItShouldSendADefaultStatusCodeOf200() {
+		$response = JSONResponse::create(array("message" => "You are not allowed to access that response"));
 
+		ob_start();
+		$response->send();
+		ob_end_clean();
+
+		$this->assertEquals(200, http_response_code());
 	}
 
+    /**
+    * @runInSeparateProcess
+    */
 	public function testItShouldSendTheCorrectCustomData() {
+		$response = JSONResponse::create(array("testKey" => "testValue"));
 
+		ob_start();
+		$response->send();
+		$output = @json_decode(ob_get_contents());
+		ob_end_clean();
+
+		$this->assertTrue(!empty($output));
+		$this->assertTrue(is_object($output));
+		$this->assertEquals(1, count((array)$output));
+		$this->assertObjectHasAttribute("testKey", $output);
+		$this->assertEquals("testValue", $output->testKey);
 	}
 }
