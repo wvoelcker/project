@@ -32,16 +32,6 @@ class ExampleRedirectorWith301DefaultStatusCode extends Redirector {
 	}
 }
 
-class ExampleRedirectorWithInvalidDefaultStatusCode extends Redirector {
-	protected function setUp() {
-		$this->setDefaultStatusCode(418);
-		$this->addRedirect("/^http:\/\/tests.example.com\/step1$/", "http://tests.example.com/step2");
-		$this->addRedirect("/^http:\/\/tests.example.com\/step2$/", "http://tests.example.com/step3");
-		$this->addRedirect("/^http:\/\/tests.example.com\/step3$/", "http://tests.example.com/step4");
-		$this->addRedirect("/^http:\/\/tests.example.com\/step4$/", "http://tests.example.com/step5");
-	}
-}
-
 class ExampleRedirectorWithCircularRedirect extends Redirector {
 	protected function setUp() {
 		$this->addRedirect("/^http:\/\/tests.example.com\/step1$/", "http://tests.example.com/step2");
@@ -162,17 +152,6 @@ class TestRedirector extends TestCase {
 
 		$responseCode = http_response_code();
 		$this->assertEquals(301, $responseCode);
-	}
-
-    /**
-     * @runInSeparateProcess
-     * @expectedException Exception
-     * @expectedExceptionMessage Circular redirect detected
-     */
-	public function testItShouldThrowAnExceptionIfTheStatusCodeWasNotValid() {
-		ob_start();
-		ExampleRedirectorWithInvalidDefaultStatusCode::create()->redirect("http://tests.example.com/step1");
-		ob_end_clean();
 	}
 
     /**
