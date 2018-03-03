@@ -43,11 +43,11 @@ abstract class Router {
 	 * for dependency injection purposes (e.g. when unit testing)
 	 *
 	 */
-	protected function getDispatcher($routingData) {
+	protected final function getDispatcher($routingData) {
 		return new Dispatcher($routingData);
 	}
 
-	protected function runController($controllerPath, $urlParams = array(), $lastException = null) {
+	protected final function runController($controllerPath, $urlParams = array(), $lastException = null) {
 		try {
 			$controller = Controller::create($this->projectRoot, $this->activeEnvironment);
 			$controller->setRelativeFilePath($controllerPath);
@@ -63,36 +63,36 @@ abstract class Router {
 		}
 	}
 
-	protected function getRoutingData() {
+	protected final function getRoutingData() {
 
 		// Comment from the examples in the Phroute docs:
 		// NB. You can cache the return value from $router->getData() so you don't have to create the routes each request - massive speed gains
 		return $this->routeCollector->getData();
 	}
 
-	protected function get($pathPattern, $controller, $responseMimeType = null) {
+	protected final function get($pathPattern, $controller, $responseMimeType = null) {
 		$this->addRoute("get", $pathPattern, $controller, $responseMimeType);
 	}
 
-	protected function allowOptions($pathPattern, $controller, $responseMimeType = null) {
+	protected final function allowOptions($pathPattern, $controller, $responseMimeType = null) {
 		if (!$this->hasRoute("options", $pathPattern)) {
 			$this->addRoute("options", $pathPattern, $controller, $responseMimeType);
 		}
 	}
 
-	protected function post($pathPattern, $controller, $responseMimeType = null) {
+	protected final function post($pathPattern, $controller, $responseMimeType = null) {
 		$this->addRoute("post", $pathPattern, $controller, $responseMimeType);
 	}
 
-	protected function put($pathPattern, $controller, $responseMimeType = null) {
+	protected final function put($pathPattern, $controller, $responseMimeType = null) {
 		$this->addRoute("put", $pathPattern, $controller, $responseMimeType);
 	}
 
-	protected function delete($pathPattern, $controller, $responseMimeType = null) {
+	protected final function delete($pathPattern, $controller, $responseMimeType = null) {
 		$this->addRoute("delete", $pathPattern, $controller, $responseMimeType);
 	}
 
-	protected function getOrPost($pathPattern, $controller, $responseMimeType = null) {
+	protected final function getOrPost($pathPattern, $controller, $responseMimeType = null) {
 		$this->addRoute(array("get", "post"), $pathPattern, $controller, $responseMimeType);
 	}
 
