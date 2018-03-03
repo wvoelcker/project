@@ -41,6 +41,5 @@ class JSONResponse {
 			$headerset->send();
 		}
 		echo json_encode($this->data);
-		exit;
 	}
 }
