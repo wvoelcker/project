@@ -33,7 +33,7 @@ class PDOGenerator {
 			throw new \Exception("Can't generate a PDO without a hostname, username, and password");
 		}
 
-		$connectionString = "mysql:host=".$this->hostname.";charset=utf8";
+		$connectionString = "mysql:host=".$this->hostname.(empty($this->databasename)?"":(";dbname=".$this->databasename)).";charset=utf8";
 
 		if (!empty($this->logger)) {
 			return new \LoggedPDO\PDO(
