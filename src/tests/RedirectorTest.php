@@ -21,6 +21,27 @@ class ExampleRedirectorWith301 extends Redirector {
 	}
 }
 
+class ExampleRedirectorWith301DefaultStatusCode extends Redirector {
+
+	protected function setUp() {
+		$this->setDefaultStatusCode(301);
+		$this->addRedirect("/^http:\/\/tests.example.com\/step1$/", "http://tests.example.com/step2");
+		$this->addRedirect("/^http:\/\/tests.example.com\/step2$/", "http://tests.example.com/step3");
+		$this->addRedirect("/^http:\/\/tests.example.com\/step3$/", "http://tests.example.com/step4");
+		$this->addRedirect("/^http:\/\/tests.example.com\/step4$/", "http://tests.example.com/step5");
+	}
+}
+
+class ExampleRedirectorWithInvalidDefaultStatusCode extends Redirector {
+	protected function setUp() {
+		$this->setDefaultStatusCode(418);
+		$this->addRedirect("/^http:\/\/tests.example.com\/step1$/", "http://tests.example.com/step2");
+		$this->addRedirect("/^http:\/\/tests.example.com\/step2$/", "http://tests.example.com/step3");
+		$this->addRedirect("/^http:\/\/tests.example.com\/step3$/", "http://tests.example.com/step4");
+		$this->addRedirect("/^http:\/\/tests.example.com\/step4$/", "http://tests.example.com/step5");
+	}
+}
+
 class ExampleRedirectorWithCircularRedirect extends Redirector {
 	protected function setUp() {
 		$this->addRedirect("/^http:\/\/tests.example.com\/step1$/", "http://tests.example.com/step2");
@@ -47,7 +68,7 @@ class TestRedirector extends TestCase {
      * @expectedExceptionMessage Circular redirect detected
      */
 	public function testItShouldDetectCircularRedirects() {
-		$redirector = ExampleRedirectorWithCircularRedirect::create()->redirect("http://tests.example.com/step1");
+		ExampleRedirectorWithCircularRedirect::create()->redirect("http://tests.example.com/step1");
 	}
 
     /**
@@ -55,7 +76,7 @@ class TestRedirector extends TestCase {
     */
 	public function testItShouldUseA301RedirectIfASingleRedirectAnywhereInTheChainIsA301() {
 		ob_start();
-		$redirector = ExampleRedirectorWith301::create()->redirect("http://tests.example.com/step1");
+		ExampleRedirectorWith301::create()->redirect("http://tests.example.com/step1");
 		ob_end_clean();
 
 		$this->assertEquals(301, http_response_code());
@@ -66,7 +87,7 @@ class TestRedirector extends TestCase {
     */
 	public function testItShouldUseA302RedirectIfThereAreNo301RedirectsInTheChain() {
 		ob_start();
-		$redirector = ExampleRedirector::create()->redirect("http://tests.example.com/step1");
+		ExampleRedirector::create()->redirect("http://tests.example.com/step1");
 		ob_end_clean();
 
 		$this->assertEquals(302, http_response_code());
@@ -81,7 +102,7 @@ class TestRedirector extends TestCase {
 		}
 
 		ob_start();
-		$redirector = ExampleRedirectorWithEarlierMatchingAfterLaterHasChanged::create()->redirect("http://tests.example.com/step1");
+		ExampleRedirectorWithEarlierMatchingAfterLaterHasChanged::create()->redirect("http://tests.example.com/step1");
 		ob_end_clean();
 
 		$headersSent = xdebug_get_headers();
@@ -97,7 +118,7 @@ class TestRedirector extends TestCase {
 		}
 
 		ob_start();
-		$redirector = ExampleRedirector::create()->redirect("http://tests.example.com/step1");
+		ExampleRedirector::create()->redirect("http://tests.example.com/step1");
 		ob_end_clean();
 
 		$responseCode = http_response_code();
@@ -107,37 +128,79 @@ class TestRedirector extends TestCase {
 		$this->assertTrue(in_array("Location: http://tests.example.com/step5", $headersSent));
 	}
 
+    /**
+    * @runInSeparateProcess
+    */
 	public function testItShouldNotAttemptToPerformARedirectIfTheConfiguredRedirectsDoNotMatchTheURL() {
 		ob_start();
-		$redirector = ExampleRedirector::create()->redirect("http://does.not.match.example.com/step1");
+		ExampleRedirector::create()->redirect("http://does.not.match.example.com/step1");
 		ob_end_clean();
 
 		$responseCode = http_response_code();
 		$this->assertEmpty($responseCode);
 	}
 
+    /**
+    * @runInSeparateProcess
+    */
 	public function testItShouldUse302AsDefaultRedirectTypeIfNoneIsSpecified() {
+		ob_start();
+		ExampleRedirector::create()->redirect("http://tests.example.com/step1");
+		ob_end_clean();
 
+		$responseCode = http_response_code();
+		$this->assertEquals(302, $responseCode);
 	}
 
+    /**
+    * @runInSeparateProcess
+    */
 	public function testIfTheRedirectorClassHasADifferentDefaultRedirectTypeItShouldUseThatInsteadOf302AsTheDefaultRedirectType() {
+		ob_start();
+		ExampleRedirectorWith301DefaultStatusCode::create()->redirect("http://tests.example.com/step1");
+		ob_end_clean();
 
+		$responseCode = http_response_code();
+		$this->assertEquals(301, $responseCode);
 	}
 
-	public function testIfTheInstantiatedRedirectorObjectsHasADifferentDefaultRedirectTypeItShouldUseThatInsteadOf302AsTheDefaultRedirectType() {
-
-	}
-
+    /**
+     * @runInSeparateProcess
+     * @expectedException Exception
+     * @expectedExceptionMessage Circular redirect detected
+     */
 	public function testItShouldThrowAnExceptionIfTheStatusCodeWasNotValid() {
-
+		ob_start();
+		ExampleRedirectorWithInvalidDefaultStatusCode::create()->redirect("http://tests.example.com/step1");
+		ob_end_clean();
 	}
 
+    /**
+     * @runInSeparateProcess
+     */
 	public function testItShouldSetAnAppropriateHTTPStatus() {
+		ob_start();
+		ExampleRedirector::create()->redirect("http://tests.example.com/step1");
+		ob_end_clean();
 
+		$responseCode = http_response_code();
+		$this->assertEquals(302, $responseCode);
 	}
 
+    /**
+     * @runInSeparateProcess
+     */
 	public function testItShouldSendAnAppropriateHTTPLocationHeader() {
+		if (!function_exists("xdebug_get_headers")) {
+			$this->markTestSkipped("XDebug is not available, so not able to verify headers");
+		}
 
+		ob_start();
+		ExampleRedirector::create()->redirect("http://tests.example.com/step1");
+		ob_end_clean();
+
+		$headersSent = xdebug_get_headers();
+		$this->assertTrue(in_array("Location: http://tests.example.com/step5", $headersSent));
 	}
 
 }
