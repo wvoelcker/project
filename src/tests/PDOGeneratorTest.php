@@ -91,4 +91,50 @@ class TestPDOGenerator extends TestCase {
 		$properties = get_object_vars($pdo->getLogger());
 		$this->assertEquals("file", $properties["_filename"]);
 	}
+
+	public function testItShouldGenerateTheCorrectConnectionStringIfThereIsNoDatabaseProvided() {
+		$pdo = $this->createAndGet();
+		$this->confirmHostnameAndUser($pdo);
+	}
+
+	private function confirmHostnameAndUser($pdo) {
+		$statement = $this->prepareAndExecute($pdo, "select @@hostname", array());
+		$results = $statement->fetchAll();
+		$this->assertEquals(php_uname("n"), $results[0]["@@hostname"]);
+
+		$statement = $this->prepareAndExecute($pdo, "select CURRENT_USER()", array());
+		$results = $statement->fetchAll();
+		$this->assertEquals($this->username."@".$this->hostname, $results[0]["CURRENT_USER()"]);
+	}
+
+	public function testItShouldGenerateTheCorrectConnectionStringIfThereIsADatabaseProvided() {
+		$pdo = $this->createAndGet();
+		$this->confirmHostnameAndUser($pdo);
+
+		$dbname = "test_".md5(microtime().rand());
+
+		// TODO:WV:20180303:Escape dbname for mysql
+		$this->prepareAndExecute($pdo, "CREATE DATABASE `".$dbname."`", array());
+
+		$pdoDB = PDOGenerator::create(
+			$this->hostname,
+			$this->username,
+			$this->password,
+			$dbname
+		)->getPDO();
+
+		$statement = $this->prepareAndExecute($pdoDB, "select DATABASE()", array());
+		$results = $statement->fetchAll();
+		$this->assertEquals($dbname, $results[0]["DATABASE()"]);
+
+		// TODO:WV:20180303:Escape dbname for mysql
+		$this->prepareAndExecute($pdo, "DROP DATABASE `".$dbname."`", array());
+	}
+
+	private function prepareAndExecute($pdo, $query, $data) {
+		$statement = $pdo->prepare($query);
+		$statement->execute($data);
+
+		return $statement;
+	}
 }
