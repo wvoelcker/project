@@ -13,7 +13,10 @@ abstract class Redirector {
 
 		$seen = array();
 		$workingURL = $fullRequestURL;
-		foreach ($this->redirects as $i => $redirect) {
+		$numRedirects = count($this->redirects);
+
+		for ($i = 0; $i < $numRedirects; $i++) {
+			$redirect = $this->redirects[$i];
 
 			// Detect circular redirects, and throw an exception if one is found
 			if (isset($seen[$i]) and in_array($workingURL, $seen[$i])) {
@@ -32,7 +35,8 @@ abstract class Redirector {
 				}
 
 				// Iterate again from the start of the array; to avoid multiple-hop redirects
-				reset($this->redirects);
+				$i = -1;
+				continue;
 			}
 		}
 
