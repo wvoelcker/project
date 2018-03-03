@@ -25,7 +25,6 @@ class ExampleRouter extends Router {
 		$this->getOrPost("/url/9/json", "controller-9", "application/json");
 		$this->getOrPost("/url/9", "controller-9");
 
-
 		// Test same URL, different controller for different HTTP methods
 		$this->post("/url/1", "controller-1a");
 		$this->put("/url/1", "controller-1b");
