@@ -92,7 +92,7 @@ class TestPDOGenerator extends TestCase {
 		$this->assertEquals("file", $properties["_filename"]);
 	}
 
-	public function testItShouldGenerateTheCorrectConnectionStringIfThereIsNoDatabaseProvided() {
+	public function testItShouldGenerateTheCorrectConnectionIfThereIsNoDatabaseProvided() {
 		$pdo = $this->createAndGet();
 		$this->confirmHostnameAndUser($pdo);
 	}
@@ -107,13 +107,12 @@ class TestPDOGenerator extends TestCase {
 		$this->assertEquals($this->username."@".$this->hostname, $results[0]["CURRENT_USER()"]);
 	}
 
-	public function testItShouldGenerateTheCorrectConnectionStringIfThereIsADatabaseProvided() {
+	public function testItShouldGenerateTheCorrectConnectionIfThereIsADatabaseProvided() {
 		$pdo = $this->createAndGet();
 		$this->confirmHostnameAndUser($pdo);
 
 		$dbname = "test_".md5(microtime().rand());
 
-		// TODO:WV:20180303:Escape dbname for mysql
 		$this->prepareAndExecute($pdo, "CREATE DATABASE `".$dbname."`", array());
 
 		$pdoDB = PDOGenerator::create(
@@ -126,8 +125,6 @@ class TestPDOGenerator extends TestCase {
 		$statement = $this->prepareAndExecute($pdoDB, "select DATABASE()", array());
 		$results = $statement->fetchAll();
 		$this->assertEquals($dbname, $results[0]["DATABASE()"]);
-
-		// TODO:WV:20180303:Escape dbname for mysql
 		$this->prepareAndExecute($pdo, "DROP DATABASE `".$dbname."`", array());
 	}
 
