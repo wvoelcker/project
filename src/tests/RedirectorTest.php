@@ -17,9 +17,7 @@ class ExampleRedirectorWithCircularRedirect extends Redirector {
 		$this->addRedirect("/^http:\/\/tests.example.com\/step1$/", "http://tests.example.com/step2");
 		$this->addRedirect("/^http:\/\/tests.example.com\/step2$/", "http://tests.example.com/step3");
 		$this->addRedirect("/^http:\/\/tests.example.com\/step3$/", "http://tests.example.com/step1");
-		/*
 		$this->addRedirect("/^http:\/\/tests.example.com\/step4$/", "http://tests.example.com/step5");
-		*/
 	}
 }
 
@@ -27,7 +25,7 @@ class TestRedirector extends TestCase {
 
     /**
      * @expectedException Exception
-     * @expectedExceptionMessage Contact 'testContact1' already added
+     * @expectedExceptionMessage Circular redirect detected
      */
 	public function testItShouldDetectCircularRedirects() {
 		$redirector = ExampleRedirectorWithCircularRedirect::create()->redirect("http://tests.example.com/step1");
