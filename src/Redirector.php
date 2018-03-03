@@ -42,7 +42,7 @@ abstract class Redirector {
 					$have301 = true;
 				}
 
-				// Iterate again from the start of the array; to avoid multiple-hop redirects
+				// Iterate again from the start of the array, to avoid multiple-hop redirects
 				$i = -1;
 				continue;
 			}
