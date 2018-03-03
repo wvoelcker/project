@@ -4,17 +4,20 @@ use PHPUnit\Framework\TestCase;
 use WillV\Project\PDOGenerator;
 
 class TestPDOGenerator extends TestCase {
+
+	// NOTE: These tests require the following user to be able to connect to the MySQL process
+	private $hostname = "localhost", $username = "phpunit", $password = "phpunit";
+
 	public function testItShouldReturnAPDOGeneratorWhenCreateIsCalled() {
-		$generator = PDOGenerator::create("testhostname", "testdatabasename", "testusername", "testpassword");
+		$generator = $this->create();
 		$this->assertTrue($generator instanceof PDOGenerator);
 	}
 
 	private function create($omit = null) {
 		$details = array(
-			"hostname" => "testhostname",
-			"databasename" => "testdatabasename",
-			"username" => "testusername",
-			"password" => "testpassword",
+			"hostname" => $this->hostname,
+			"username" => $this->username,
+			"password" => $this->password
 		);
 
 		if (!empty($omit)) {
@@ -23,7 +26,6 @@ class TestPDOGenerator extends TestCase {
 
 		return PDOGenerator::create(
 			$details["hostname"],
-			$details["databasename"],
 			$details["username"],
 			$details["password"]
 		);
@@ -31,10 +33,10 @@ class TestPDOGenerator extends TestCase {
 
     /**
      * @expectedException Exception
-     * @expectedExceptionMessage Can't generate a PDO without a hostname, databasename, username, and password
+     * @expectedExceptionMessage Can't generate a PDO without a hostname, username, and password
      */
 	public function testItShouldThrowAnExceptionWhenGettingAPDOIfHostnameIsMissing() {
-		$this->createAndGet();
+		$this->createAndGet("hostname");
 	}
 
 	private function createAndGet($omit = null, $logMode = null) {
@@ -57,15 +59,7 @@ class TestPDOGenerator extends TestCase {
 
     /**
      * @expectedException Exception
-     * @expectedExceptionMessage Can't generate a PDO without a hostname, databasename, username, and password
-     */
-	public function testItShouldThrowAnExceptionWhenGettingAPDOIfDatabasenameIsMissing() {
-		$this->createAndGet("databasename");
-	}
-
-    /**
-     * @expectedException Exception
-     * @expectedExceptionMessage Can't generate a PDO without a hostname, databasename, username, and password
+     * @expectedExceptionMessage Can't generate a PDO without a hostname, username, and password
      */
 	public function testItShouldThrowAnExceptionWhenGettingAPDOIfUsernameIsMissing() {
 		$this->createAndGet("username");
@@ -73,7 +67,7 @@ class TestPDOGenerator extends TestCase {
 
     /**
      * @expectedException Exception
-     * @expectedExceptionMessage Can't generate a PDO without a hostname, databasename, username, and password
+     * @expectedExceptionMessage Can't generate a PDO without a hostname, username, and password
      */
 	public function testItShouldThrowAnExceptionWhenGettingAPDOIfPasswordIsMissing() {
 		$this->createAndGet("password")->getPDO();
@@ -86,11 +80,15 @@ class TestPDOGenerator extends TestCase {
 
 	public function testItShouldLogToConsoleIfSpecified() {
 		$pdo = $this->createAndGet(null, "console");
-		$this->assertTrue($db instanceof \LoggedPDO\PDO);
+		$this->assertTrue($pdo instanceof \LoggedPDO\PDO);
+		$properties = get_object_vars($pdo->getLogger());
+		$this->assertEquals("console", $properties["_filename"]);
 	}
 
 	public function testItShouldLogToFileIfSpecified() {
 		$pdo = $this->createAndGet(null, "file");
-		$this->assertTrue($db instanceof \LoggedPDO\PDO);
+		$this->assertTrue($pdo instanceof \LoggedPDO\PDO);
+		$properties = get_object_vars($pdo->getLogger());
+		$this->assertEquals("file", $properties["_filename"]);
 	}
 }

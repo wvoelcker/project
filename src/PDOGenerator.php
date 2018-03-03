@@ -5,12 +5,12 @@ class PDOGenerator {
 	protected $pdo, $hostname = null, $databasename = null, $username = null, $password = null;
 	protected $logger;
 
-	static public function create($hostname, $databasename, $username, $password) {
+	static public function create($hostname, $username, $password, $databasename = null) {
 		$db = new PDOGenerator;
 		$db->hostname = $hostname;
-		$db->databasename = $databasename;
 		$db->username = $username;
 		$db->password = $password;
+		$db->databasename = $databasename;
 		return $db;
 	}
 
@@ -29,11 +29,11 @@ class PDOGenerator {
 	}
 
 	public function getPDO() {
-		if (($this->hostname === null) or ($this->databasename === null) or ($this->username === null) or ($this->password === null)) {
-			throw new \Exception("Can't generate a PDO without a hostname, databasename, username, and password");
+		if (($this->hostname === null) or ($this->username === null) or ($this->password === null)) {
+			throw new \Exception("Can't generate a PDO without a hostname, username, and password");
 		}
 
-		$connectionString = "mysql:host=".$this->hostname.";dbname=".$this->databasename.";charset=utf8";
+		$connectionString = "mysql:host=".$this->hostname.";charset=utf8";
 
 		if (!empty($this->logger)) {
 			return new \LoggedPDO\PDO(
