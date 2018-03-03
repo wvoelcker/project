@@ -114,12 +114,15 @@ class TestJSONResponse extends TestCase {
     */
 	public function testItShouldSendTheCorrectStatusCodeForValidationErrors() {
 		$response = JSONResponse::createFromValidationErrors(array("example-field" => "This field was invalid"));
+		$this->confirmResponseCodeSent($response, 400);
+	}
 
+	private function confirmResponseCodeSent($response, $expectedCode) {
 		ob_start();
 		$response->send();
 		ob_end_clean();
 
-		$this->assertEquals(400, http_response_code());
+		$this->assertEquals($expectedCode, http_response_code());
 	}
 
     /**
@@ -127,12 +130,7 @@ class TestJSONResponse extends TestCase {
     */
 	public function testItShouldSendTheSpecifiedStatusCode() {
 		$response = JSONResponse::create(array("message" => "You are not allowed to access that response"), 403);
-
-		ob_start();
-		$response->send();
-		ob_end_clean();
-
-		$this->assertEquals(403, http_response_code());
+		$this->confirmResponseCodeSent($response, 403);
 	}
 
     /**
@@ -140,12 +138,7 @@ class TestJSONResponse extends TestCase {
     */
 	public function testItShouldSendADefaultStatusCodeOf200() {
 		$response = JSONResponse::create(array("message" => "You are not allowed to access that response"));
-
-		ob_start();
-		$response->send();
-		ob_end_clean();
-
-		$this->assertEquals(200, http_response_code());
+		$this->confirmResponseCodeSent($response, 200);
 	}
 
     /**
