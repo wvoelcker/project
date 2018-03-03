@@ -75,7 +75,6 @@ abstract class Redirector {
 
 		header("HTTP/1.1 ".$statuscode." ".(($statuscode == 301?"Moved Permamently":"Found")));
 		header("Location: ".$newURL);
-		exit;
 	}
 
 }
