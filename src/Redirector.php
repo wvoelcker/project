@@ -4,6 +4,14 @@
  */
 namespace WillV\Project;
 
+
+/**
+ * This class was designed as an easier alternative to long lists of Apache .htaccess redirects.
+ * However, it can also be used for individual redirects, or short lists of redirects.
+ * It will intelligently work through the redirect chain, and collapse it into a single redirect.
+ *
+ * To use it, override the class and call addRedirect repeatedly in the setUp method.
+ */
 abstract class Redirector {
 	use Trait_AbstractTemplate;
 	protected $redirects = array(), $defaultStatusCode = 302;
