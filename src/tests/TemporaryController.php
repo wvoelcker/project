@@ -15,6 +15,7 @@ class TemporaryController {
 		} else {
 			$thisControllerPathNoExtension = $testControllerDir."/".$fileName;
 			$thisControllerPath = $thisControllerPathNoExtension.".php";
+			touch($thisControllerPath);
 		}
 
 		// Make a file accessible only to the current user
@@ -23,6 +24,9 @@ class TemporaryController {
 
 		$thisControllerName = basename($thisControllerPath, ".php");
 
+		if (!empty($fileContents)) {
+			$fileContents = "<?php ".$fileContents;
+		}
 		file_put_contents($thisControllerPath, $fileContents);
 
 		return array(
