@@ -60,18 +60,7 @@ class ExampleEnvironment extends Environment {
 class TestRouter extends TestCase {
 	public function testItShouldRunThe404ControllerIfTheRouteWasNotFound() {
 		$controllerDetails = TemporaryController::make("echo '404 Not Found';", "404");
-		$router = ExampleRouter::create(
-			$controllerDetails["testProjRoot"],
-			ExampleEnvironment::create(
-				array(
-					"exampleKey1" => "exampleValue1",
-					"exampleKey2" => "exampleValue2"
-				),
-				function() {
-					return true;
-				}
-			)
-		);
+		$router = $this->makeRouter($controllerDetails["testProjRoot"]);
 
 		ob_start();
 		$router->go(
@@ -85,15 +74,9 @@ class TestRouter extends TestCase {
 		$this->assertEquals("404 Not Found", $output);
 	}
 
-    /**
-    * @runInSeparateProcess
-    */
-	public function testItShouldRunThe500ControllerIfThereWasAnException() {
-		$testProjRoot = TemporaryController::getTestProjRoot();
-		$errorControllerDetails = TemporaryController::make("echo '500 Internal Server Error';", "500", $testProjRoot);
-		$routeControllerDetails = TemporaryController::make("throw new \Exception('Example Exception');", "controller-1", $testProjRoot);
+	private function makeRouter($projectRoot) {
 		$router = ExampleRouter::create(
-			$routeControllerDetails["testProjRoot"],
+			$projectRoot,
 			ExampleEnvironment::create(
 				array(
 					"exampleKey1" => "exampleValue1",
@@ -104,6 +87,18 @@ class TestRouter extends TestCase {
 				}
 			)
 		);
+
+		return $router;
+	}
+
+    /**
+    * @runInSeparateProcess
+    */
+	public function testItShouldRunThe500ControllerIfThereWasAnException() {
+		$testProjRoot = TemporaryController::getTestProjRoot();
+		$errorControllerDetails = TemporaryController::make("echo '500 Internal Server Error';", "500", $testProjRoot);
+		$routeControllerDetails = TemporaryController::make("throw new \Exception('Example Exception');", "controller-1", $testProjRoot);
+		$router = $this->makeRouter($routeControllerDetails["testProjRoot"]);
 
 		ob_start();
 		$router->go(
@@ -127,18 +122,7 @@ class TestRouter extends TestCase {
 		$testProjRoot = TemporaryController::getTestProjRoot();
 		$errorControllerDetails = TemporaryController::make("echo '500 Internal Server Error';", "500", $testProjRoot);
 		$routeControllerDetails = TemporaryController::make("throw new \Exception('Example Exception');", "controller-1", $testProjRoot);
-		$router = ExampleRouterThatDoesntCatchExceptions::create(
-			$routeControllerDetails["testProjRoot"],
-			ExampleEnvironment::create(
-				array(
-					"exampleKey1" => "exampleValue1",
-					"exampleKey2" => "exampleValue2"
-				),
-				function() {
-					return true;
-				}
-			)
-		);
+		$router = $this->makeRouter($routeControllerDetails["testProjRoot"]);
 
 		ob_start();
 		$e = null;
@@ -160,22 +144,73 @@ class TestRouter extends TestCase {
 		}
 	}
 
+    /**
+    * @runInSeparateProcess
+    */
 	public function testItShouldDetectGetRequests() {
+		$this->confirmHttpMethod("GET", "1");
 	}
 
+	private function confirmHttpMethod($method, $number) {
+		$routeControllerDetails = TemporaryController::make("echo basename(__FILE__, '.php').'-contents';", "controller-".$number);
+		$router = $this->makeRouter($routeControllerDetails["testProjRoot"]);
+
+		ob_start();
+		$router->go(
+			$method,
+			"/url/".$number
+		);
+		$output = ob_get_contents();
+		ob_end_clean();
+		TemporaryController::tidyUp($routeControllerDetails);
+
+		$this->assertEquals("controller-".$number."-contents", $output);
+	}
+
+    /**
+    * @runInSeparateProcess
+    */
 	public function testItShouldDetectPostRequests() {
+		$this->confirmHttpMethod("POST", "3");
 	}
 
+    /**
+    * @runInSeparateProcess
+    */
 	public function testItShouldDetectPutRequests() {
+		$this->confirmHttpMethod("PUT", "5");
 	}
 
+    /**
+    * @runInSeparateProcess
+    */
 	public function testItShouldDetectDeleteRequests() {
+		$this->confirmHttpMethod("DELETE", "7");
 	}
 
+    /**
+    * @runInSeparateProcess
+    */
 	public function testItShouldDetectOptionsRequests() {
+		$this->confirmHttpMethod("OPTIONS", "11");
 	}
 
-	public function testItShouldHandleGetOrPostRoutes() {
+    /**
+    * @runInSeparateProcess
+    */
+	public function testItShouldHandleGetOrPostRoutesWhenGetIsTheMethod() {
+		$this->confirmHttpMethod("GET", "9");
+	}
+
+    /**
+    * @runInSeparateProcess
+    */
+	public function testItShouldHandleGetOrPostRoutesWhenPostIsTheMethod() {
+		$this->confirmHttpMethod("POST", "9");
+	}
+
+	public function testItShouldThrowAnExceptionIfYouTryToUseAnHttpMethodThatIsNotAllowedForAParticularURL() {
+
 	}
 
 	public function testItShouldSupportSupplyingAnArrayOfPathPatterns() {
