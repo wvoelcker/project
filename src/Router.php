@@ -74,10 +74,8 @@ abstract class Router {
 		$this->addRoute("get", $pathPattern, $controller, $responseMimeType);
 	}
 
-	protected final function allowOptions($pathPattern, $controller, $responseMimeType = null) {
-		if (!$this->hasRoute("options", $pathPattern)) {
-			$this->addRoute("options", $pathPattern, $controller, $responseMimeType);
-		}
+	protected final function options($pathPattern, $controller, $responseMimeType = null) {
+		$this->addRoute("options", $pathPattern, $controller, $responseMimeType);
 	}
 
 	protected final function post($pathPattern, $controller, $responseMimeType = null) {
