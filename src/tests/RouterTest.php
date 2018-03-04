@@ -77,18 +77,24 @@ class TestRouter extends TestCase {
 	private function makeRouter($projectRoot) {
 		$router = ExampleRouter::create(
 			$projectRoot,
-			ExampleEnvironment::create(
-				array(
-					"exampleKey1" => "exampleValue1",
-					"exampleKey2" => "exampleValue2"
-				),
-				function() {
-					return true;
-				}
-			)
+			$this->makeEnvironment()
 		);
 
 		return $router;
+	}
+
+	private function makeEnvironment() {
+		$environment = ExampleEnvironment::create(
+			array(
+				"exampleKey1" => "exampleValue1",
+				"exampleKey2" => "exampleValue2"
+			),
+			function() {
+				return true;
+			}
+		);
+
+		return $environment;
 	}
 
     /**
@@ -122,7 +128,11 @@ class TestRouter extends TestCase {
 		$testProjRoot = TemporaryController::getTestProjRoot();
 		$errorControllerDetails = TemporaryController::make("echo '500 Internal Server Error';", "500", $testProjRoot);
 		$routeControllerDetails = TemporaryController::make("throw new \Exception('Example Exception');", "controller-1", $testProjRoot);
-		$router = $this->makeRouter($routeControllerDetails["testProjRoot"]);
+
+		$router = ExampleRouterThatDoesntCatchExceptions::create(
+			$routeControllerDetails["testProjRoot"],
+			$this->makeEnvironment()
+		);
 
 		ob_start();
 		$e = null;
