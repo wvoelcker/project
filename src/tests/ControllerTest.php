@@ -32,7 +32,7 @@ class TestController extends TestCase {
 	}
 
 	private function createAndRunTestController($fileContents, $urlParams = array(), $lastException = null) {
-		$controllerDetails = TemporaryController::make("<?php ".$fileContents);
+		$controllerDetails = TemporaryController::make($fileContents);
 
 		$controller = Controller::create($controllerDetails["testProjRoot"], $this->makeDummyEnvironment());
 		$controller->setRelativeFilePath($controllerDetails["controllerName"]);
