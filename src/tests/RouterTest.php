@@ -2,6 +2,7 @@
 namespace WillV\Project\Tests\Router;
 use PHPUnit\Framework\TestCase;
 use WillV\Project\Router;
+use WillV\Project\Environment;
 
 use WillV\Project\Tests\TemporaryController;
 require_once(__DIR__."/TemporaryController.php");
@@ -40,8 +41,41 @@ class ExampleRouter extends Router {
 	}
 }
 
+class ExampleEnvironment extends Environment {
+	protected function setUp() {
+		$this->requiredFields = array(
+			"exampleKey1",
+			"exampleKey2"
+		);
+	}
+}
+
 class TestRouter extends TestCase {
 	public function testItShouldRunThe404ControllerIfTheRouteWasNotFound() {
+		$controllerDetails = TemporaryController::make("echo '404 Not Found';", "404");
+		$router = ExampleRouter::create(
+			$controllerDetails["testProjRoot"],
+			ExampleEnvironment::create(
+				array(
+					"exampleKey1" => "exampleValue1",
+					"exampleKey2" => "exampleValue2"
+				),
+				function() {
+					return true;
+				}
+			)
+		);
+
+		ob_start();
+		$router->go(
+			"GET",
+			"/no/such/path"
+		);
+		$output = ob_get_contents();
+		TemporaryController::tidyUp($controllerDetails);
+		ob_end_clean();
+
+		$this->assertEquals("404 Not Found", $output);
 	}
 
 	public function testItShouldRunThe500ControllerIfThereWasAnException() {
