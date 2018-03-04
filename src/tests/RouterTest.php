@@ -38,6 +38,9 @@ class ExampleRouter extends Router {
 		$this->put("/url/1", "controller-1b");
 		$this->delete("/url/1", "controller-1c");
 		$this->options("/url/1", "controller-1d");
+
+		// Test supplying an array of path patterns
+		$this->get(array("/url/14", "/url/15", "/url/16"), "controller-14");
 	}
 }
 
@@ -161,20 +164,23 @@ class TestRouter extends TestCase {
 		$this->confirmHttpMethod("GET", "1");
 	}
 
-	private function confirmHttpMethod($method, $number) {
-		$routeControllerDetails = TemporaryController::make("echo basename(__FILE__, '.php').'-contents';", "controller-".$number);
+	private function confirmHttpMethod($method, $controllerNumber, $urlNumber = null) {
+		if ($urlNumber === null) {
+			$urlNumber = $controllerNumber;
+		}
+		$routeControllerDetails = TemporaryController::make("echo basename(__FILE__, '.php').'-contents';", "controller-".$controllerNumber);
 		$router = $this->makeRouter($routeControllerDetails["testProjRoot"]);
 
 		ob_start();
 		$router->go(
 			$method,
-			"/url/".$number
+			"/url/".$urlNumber
 		);
 		$output = ob_get_contents();
 		ob_end_clean();
 		TemporaryController::tidyUp($routeControllerDetails);
 
-		$this->assertEquals("controller-".$number."-contents", $output);
+		$this->assertEquals("controller-".$controllerNumber."-contents", $output);
 	}
 
     /**
@@ -228,14 +234,19 @@ class TestRouter extends TestCase {
 		$testProjRoot = TemporaryController::getTestProjRoot();
 		$router = $this->makeRouter($testProjRoot);
 
-		ob_start();
 		$router->go(
 			"POST",
 			"/url/5"
 		);
 	}
 
+    /**
+    * @runInSeparateProcess
+    */
 	public function testItShouldSupportSupplyingAnArrayOfPathPatterns() {
+		$this->confirmHttpMethod("GET", "14", "14");
+		$this->confirmHttpMethod("GET", "14", "15");
+		$this->confirmHttpMethod("GET", "14", "16");
 	}
 
 	public function testItShouldUseADefaultResponseMimeTypeIfNoneWasProvided() {
