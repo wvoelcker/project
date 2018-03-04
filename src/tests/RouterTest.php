@@ -255,6 +255,9 @@ class TestRouter extends TestCase {
 	public function testItShouldUseTextHtmlAsTheDefaultResponseMimeTypeIfNoDefaultWasProvided() {
 	}
 
+	public function testItShouldSpecifyUTF8AsTheCharset() {
+	}
+
 	public function testItShouldRunTheAppropriateController() {
 	}
 
