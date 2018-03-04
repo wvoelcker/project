@@ -4,6 +4,9 @@ use PHPUnit\Framework\TestCase;
 use WillV\Project\Controller;
 use WillV\Project\Environment;
 
+use WillV\Project\Tests\TemporaryController;
+require_once(__DIR__."/TemporaryController.php");
+
 class DummyEnvironment extends Environment {
 	protected function setUp() {
 		$this->requiredFields = array("dummyKey");
@@ -28,38 +31,8 @@ class TestController extends TestCase {
 		$this->assertTrue($controller instanceof Controller);
 	}
 
-	private function makeTestController($fileContents = "") {
-		$testProjRoot = "/dev/shm/project-tests-".uniqid();
-		$testControllerDir = $testProjRoot."/controllers";
-		if (!file_exists($testControllerDir)) {
-			mkdir($testControllerDir, 0700, true);
-		}
-		$thisControllerPathNoExtension = tempnam($testControllerDir, "project");
-		$thisControllerPath = $thisControllerPathNoExtension.".php";
-		rename($thisControllerPathNoExtension, $thisControllerPath);
-
-		// Make a file accessible only to the current user
-		// TODO:WV:20180226:What is the most secure way of doing this?  Any way to limit the file to the current *process* (not the current user?)
-		chmod($thisControllerPath, 0600);
-
-		$thisControllerName = basename($thisControllerPath, ".php");
-
-		file_put_contents($thisControllerPath, $fileContents);
-
-		return array(
-			"testProjRoot" => $testProjRoot,
-			"controllerName" => $thisControllerName,
-			"fullPath" => $thisControllerPath,
-		);
-	}
-
-	private function tidyUpTestController($controllerDetails) {
-		unlink($controllerDetails["fullPath"]);
-		rmdir(dirname($controllerDetails["fullPath"]));
-	}
-
 	private function createAndRunTestController($fileContents, $urlParams = array(), $lastException = null) {
-		$controllerDetails = $this->makeTestController("<?php ".$fileContents);
+		$controllerDetails = TemporaryController::make("<?php ".$fileContents);
 
 		$controller = Controller::create($controllerDetails["testProjRoot"], $this->makeDummyEnvironment());
 		$controller->setRelativeFilePath($controllerDetails["controllerName"]);
@@ -87,7 +60,7 @@ class TestController extends TestCase {
 			$controllerDetails["testProjRoot"]."/controllers/".$controllerDetails["controllerName"].".php",
 			$controllerDetails["output"]
 		);
-		$this->tidyUpTestController($controllerDetails);
+		TemporaryController::tidyUp($controllerDetails);
 	}
 
 	public function testItShouldMakeProjectRootAvailableToRequiredControllers() {
@@ -97,7 +70,7 @@ class TestController extends TestCase {
 			$controllerDetails["testProjRoot"],
 			$controllerDetails["output"]
 		);
-		$this->tidyUpTestController($controllerDetails);
+		TemporaryController::tidyUp($controllerDetails);
 	}
 
 	public function testItShouldMakeActiveEnvironmentAvailableToRequiredControllers() {
@@ -107,7 +80,7 @@ class TestController extends TestCase {
 			"dummyValue",
 			$controllerDetails["output"]
 		);
-		$this->tidyUpTestController($controllerDetails);
+		TemporaryController::tidyUp($controllerDetails);
 	}
 
 	public function testItShouldMakeUrlParametersAvailableToRequiredControllers() {
@@ -117,7 +90,7 @@ class TestController extends TestCase {
 			"dummyUrlParamValue",
 			$controllerDetails["output"]
 		);
-		$this->tidyUpTestController($controllerDetails);
+		TemporaryController::tidyUp($controllerDetails);
 	}
 
 	public function testItShouldMakeTheLastExceptionAvailableToRequiredControllers() {
@@ -127,7 +100,7 @@ class TestController extends TestCase {
 			"Test Exception",
 			$controllerDetails["output"]
 		);
-		$this->tidyUpTestController($controllerDetails);
+		TemporaryController::tidyUp($controllerDetails);
 	}
 
 	public function testItShouldReturnAReferenceToItselfAfterCallingSetRelativeFilePath() {
