@@ -122,7 +122,7 @@ abstract class Router {
 
 		// NB this validation is important as the $httpMethod is used to generate a
 		// PHP method name to call on $this->routeCollector (see below)
-		$validMethods = array("get", "head", "post", "put", "delete", "options");
+		$validMethods = array("get", "post", "put", "delete", "options");
 		if (!in_array($httpMethod, $validMethods)) {
 			throw new Exception("Invalid HTTP method; expected one of the following: {".join(", ", $validMethods)."}");
 		}
