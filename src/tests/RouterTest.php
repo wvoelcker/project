@@ -3,6 +3,9 @@ namespace WillV\Project\Tests\Router;
 use PHPUnit\Framework\TestCase;
 use WillV\Project\Router;
 
+use WillV\Project\Tests\TemporaryController;
+require_once(__DIR__."/TemporaryController.php");
+
 class ExampleRouter extends Router {
 	protected function setUp() {
 		$this->get("/url/1", "controller-1");
@@ -23,14 +26,72 @@ class ExampleRouter extends Router {
 
 		$this->getOrPost("/url/9", "controller-9");
 		$this->getOrPost("/url/9/json", "controller-9", "application/json");
-		$this->getOrPost("/url/9", "controller-9");
+		$this->getOrPost("/url/10", "controller-10");
+
+		$this->options("/url/11", "controller-11");
+		$this->options("/url/11/json", "controller-11", "application/json");
+		$this->options("/url/12", "controller-12");
 
 		// Test same URL, different controller for different HTTP methods
 		$this->post("/url/1", "controller-1a");
 		$this->put("/url/1", "controller-1b");
 		$this->delete("/url/1", "controller-1c");
+		$this->options("/url/1", "controller-1d");
 	}
 }
 
 class TestRouter extends TestCase {
+	public function testItShouldRunThe404ControllerIfTheRouteWasNotFound() {
+	}
+
+	public function testItShouldRunThe500ControllerIfThereWasAnException() {
+	}
+
+	public function testItShouldNotRunThe500ControllerIfThereWasAnExceptionButCatchExceptionsIsSetToFalse() {
+	}
+
+	public function testItShouldDetectGetRequests() {
+	}
+
+	public function testItShouldDetectPostRequests() {
+	}
+
+	public function testItShouldDetectPutRequests() {
+	}
+
+	public function testItShouldDetectDeleteRequests() {
+	}
+
+	public function testItShouldDetectOptionsRequests() {
+	}
+
+	public function testItShouldHandleGetOrPostRoutes() {
+	}
+
+	public function testItShouldSupportSupplyingAnArrayOfPathPatterns() {
+	}
+
+	public function testItShouldUseADefaultResponseMimeTypeIfNoneWasProvided() {
+	}
+
+	public function testItShouldRunTheAppropriateController() {
+	}
+
+	public function testItShouldSupportNamedParameters() {
+	}
+
+	public function testItShouldSupportNamedParametersWithRegexMatches() {
+	}
+
+	public function testItShouldSupportRegexShortcutForNumbersOnly() {
+	}
+
+	public function testItShouldSupportRegexShortcutForAlphanumeric() {
+	}
+
+	public function testItShouldSupportRegexShortcutForAlphanumericAndPlusAndUnderscoreAndHyphenAndDot() {
+	}
+
+	public function testItShouldSupportRegexShortcutForHexadecimal() {
+	}
 }
