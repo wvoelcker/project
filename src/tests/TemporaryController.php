@@ -2,8 +2,13 @@
 namespace WillV\Project\Tests;
 
 class TemporaryController {
-	static public function make($fileContents = "", $fileName = null) {
-		$testProjRoot = "/dev/shm/project-tests-".uniqid();
+	static public function getTestProjRoot() {
+		return $testProjRoot = "/dev/shm/project-tests-".uniqid();
+	}
+	static public function make($fileContents = "", $fileName = null, $testProjRoot = null) {
+		if (empty($testProjRoot)) {
+			$testProjRoot = self::getTestProjRoot();
+		}
 		$testControllerDir = $testProjRoot."/controllers";
 		if (!file_exists($testControllerDir)) {
 			mkdir($testControllerDir, 0700, true);
@@ -38,7 +43,16 @@ class TemporaryController {
 
 	static public function tidyUp($controllerDetails) {
 		unlink($controllerDetails["fullPath"]);
-		rmdir(dirname($controllerDetails["fullPath"]));
+		$dir = dirname($controllerDetails["fullPath"]);
+		self::rmDirIfEmpty($dir);
+		self::rmDirIfEmpty(dirname($dir));
+	}
+
+	static private function rmDirIfEmpty($dir) {
+		$directoryIsEmpty = (count(scandir($dir)) == 2);
+		if ($directoryIsEmpty) {
+			rmdir($dir);
+		}
 	}
 
 }
