@@ -219,8 +219,20 @@ class TestRouter extends TestCase {
 		$this->confirmHttpMethod("POST", "9");
 	}
 
+    /**
+    * @runInSeparateProcess
+    * @expectedException Exception
+    * @expectedExceptionMessage Allow: PUT
+    */
 	public function testItShouldThrowAnExceptionIfYouTryToUseAnHttpMethodThatIsNotAllowedForAParticularURL() {
+		$testProjRoot = TemporaryController::getTestProjRoot();
+		$router = $this->makeRouter($testProjRoot);
 
+		ob_start();
+		$router->go(
+			"POST",
+			"/url/5"
+		);
 	}
 
 	public function testItShouldSupportSupplyingAnArrayOfPathPatterns() {
