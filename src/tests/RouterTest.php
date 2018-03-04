@@ -78,7 +78,37 @@ class TestRouter extends TestCase {
 		$this->assertEquals("404 Not Found", $output);
 	}
 
+    /**
+    * @runInSeparateProcess
+    */
 	public function testItShouldRunThe500ControllerIfThereWasAnException() {
+		$testProjRoot = TemporaryController::getTestProjRoot();
+		$errorControllerDetails = TemporaryController::make("echo '500 Internal Server Error';", "500", $testProjRoot);
+		$routeControllerDetails = TemporaryController::make("throw new \Exception('Example Exception');", "controller-1", $testProjRoot);
+		$router = ExampleRouter::create(
+			$routeControllerDetails["testProjRoot"],
+			ExampleEnvironment::create(
+				array(
+					"exampleKey1" => "exampleValue1",
+					"exampleKey2" => "exampleValue2"
+				),
+				function() {
+					return true;
+				}
+			)
+		);
+
+		ob_start();
+		$router->go(
+			"GET",
+			"/url/1"
+		);
+		$output = ob_get_contents();
+		ob_end_clean();
+		TemporaryController::tidyUp($errorControllerDetails);
+		TemporaryController::tidyUp($routeControllerDetails);
+
+		$this->assertEquals("500 Internal Server Error", $output);
 	}
 
 	public function testItShouldNotRunThe500ControllerIfThereWasAnExceptionButCatchExceptionsIsSetToFalse() {
