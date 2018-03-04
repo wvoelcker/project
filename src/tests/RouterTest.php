@@ -41,6 +41,13 @@ class ExampleRouter extends Router {
 	}
 }
 
+class ExampleRouterThatDoesntCatchExceptions extends ExampleRouter {
+	protected function setUp() {
+		parent::setUp();
+		$this->catchExceptions = false;
+	}
+}
+
 class ExampleEnvironment extends Environment {
 	protected function setUp() {
 		$this->requiredFields = array(
@@ -111,7 +118,46 @@ class TestRouter extends TestCase {
 		$this->assertEquals("500 Internal Server Error", $output);
 	}
 
+    /**
+    * @runInSeparateProcess
+    * @expectedException Exception
+    * @expectedExceptionMessage Example Exception
+    */
 	public function testItShouldNotRunThe500ControllerIfThereWasAnExceptionButCatchExceptionsIsSetToFalse() {
+		$testProjRoot = TemporaryController::getTestProjRoot();
+		$errorControllerDetails = TemporaryController::make("echo '500 Internal Server Error';", "500", $testProjRoot);
+		$routeControllerDetails = TemporaryController::make("throw new \Exception('Example Exception');", "controller-1", $testProjRoot);
+		$router = ExampleRouterThatDoesntCatchExceptions::create(
+			$routeControllerDetails["testProjRoot"],
+			ExampleEnvironment::create(
+				array(
+					"exampleKey1" => "exampleValue1",
+					"exampleKey2" => "exampleValue2"
+				),
+				function() {
+					return true;
+				}
+			)
+		);
+
+		ob_start();
+		$e = null;
+		try {
+			$router->go(
+				"GET",
+				"/url/1"
+			);
+		} catch (\Exception $e) {
+			// Do nothing yet (need to close output buffers and tidy up temporary controllers before throwing $e)
+		}
+		ob_end_clean();
+
+		TemporaryController::tidyUp($errorControllerDetails);
+		TemporaryController::tidyUp($routeControllerDetails);
+
+		if (!empty($e)) {
+			throw $e;
+		}
 	}
 
 	public function testItShouldDetectGetRequests() {
@@ -136,6 +182,9 @@ class TestRouter extends TestCase {
 	}
 
 	public function testItShouldUseADefaultResponseMimeTypeIfNoneWasProvided() {
+	}
+
+	public function testItShouldUseTextHtmlAsTheDefaultResponseMimeTypeIfNoDefaultWasProvided() {
 	}
 
 	public function testItShouldRunTheAppropriateController() {
