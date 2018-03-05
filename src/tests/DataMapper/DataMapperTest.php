@@ -27,7 +27,24 @@ class ArrayDBMapper extends DataMapper {
 	}
 
 	protected function getRows($sortCol, $sortDir, $offset, $maxResults, $criteria = array()) {
+		$data = $this->data;
+		$data = array_filter($data, function($v) use ($criteria) {
+			foreach ($criteria as $key => $value) {
+				if (!isset($v[$key]) or $v[$key] != $value) {
+					return false;
+				}
+			}
+			return true;
+		});
+		$data = usort($data, function($a, $b) use ($sortCol, $sortDir) {
 
+			// TODO:WV:20180305:Confirm these are the right way roung
+			if ($sortDir == "ASC") {
+				return (int)($a - $b);
+			} else {
+				return (int)($b - $a);
+			}
+		});
 	}
 
 	protected function countRows($criteria) {
