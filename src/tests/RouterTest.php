@@ -84,7 +84,10 @@ class TestRouter extends TestCase {
 		$this->assertEquals("404 Not Found", $output);
 	}
 
-	private function makeRouter($projectRoot) {
+	private function makeRouter($projectRoot = null) {
+		if (empty($projectRoot)) {
+			$projectRoot = TemporaryController::getTestProjRoot();
+		}
 		$router = ExampleRouter::create(
 			$projectRoot,
 			$this->makeEnvironment()
@@ -238,9 +241,8 @@ class TestRouter extends TestCase {
     * @expectedExceptionMessage Allow: PUT
     */
 	public function testItShouldThrowAnExceptionIfYouTryToUseAnHttpMethodThatIsNotAllowedForAParticularURL() {
-		$testProjRoot = TemporaryController::getTestProjRoot();
-		$router = $this->makeRouter($testProjRoot);
-
+		$routeControllerDetails = $this->makeTestController(5);
+		$router = $this->makeRouter($routeControllerDetails["testProjRoot"]);
 		$router->go(
 			"POST",
 			"/url/5"
@@ -260,37 +262,82 @@ class TestRouter extends TestCase {
     * @runInSeparateProcess
     */
 	public function testItShouldUseADefaultResponseMimeTypeIfNoneWasProvided() {
-		if (!function_exists("xdebug_get_headers")) {
-			$this->markTestSkipped("XDebug is not available, so not able to verify headers");
-		}
-
-		$routeControllerDetails = TemporaryController::make("echo basename(__FILE__, '.php').'-contents';", "controller-1");
-
+		$routeControllerDetails = $this->makeTestController();
 		$router = ExampleRouterWithSpecifiedDefaultMimeType::create(
 			$routeControllerDetails["testProjRoot"],
 			$this->makeEnvironment()
 		);
 
+		$this->confirmMimeType($router, $routeControllerDetails, 1, "image/gif");
+	}
+
+	private function makeTestController($number = 1) {
+		$routeControllerDetails = TemporaryController::make("echo basename(__FILE__, '.php').'-contents';", "controller-1");
+		return $routeControllerDetails;
+	}
+
+	private function confirmMimeType($router, $routeControllerDetails, $urlEnd = 1, $mimeType = "text/html", $charset = "utf-8") {
+		if (!function_exists("xdebug_get_headers")) {
+			$this->markTestSkipped("XDebug is not available, so not able to verify headers");
+		}
+
 		ob_start();
 		$router->go(
 			"GET",
-			"/url/1"
+			"/url/".$urlEnd
 		);
 		ob_end_clean();
 		TemporaryController::tidyUp($routeControllerDetails);
 		$headersSent = xdebug_get_headers();
 
 		$this->assertTrue(is_array($headersSent));
-		$this->assertTrue(in_array("Content-Type: image/gif; charset=utf-8", $headersSent));
+		$this->assertTrue(in_array("Content-Type: ".$mimeType."; charset=".$charset, $headersSent));
 	}
 
+    /**
+    * @runInSeparateProcess
+    */
 	public function testItShouldUseTextHtmlAsTheDefaultResponseMimeTypeIfNoDefaultWasProvided() {
+		$routeControllerDetails = $this->makeTestController();
+		$router = $this->makeRouter($routeControllerDetails["testProjRoot"]);
+		$this->confirmMimeType($router, $routeControllerDetails, 1, "text/html");
 	}
 
+    /**
+    * @runInSeparateProcess
+    */
 	public function testItShouldSpecifyUTF8AsTheCharset() {
+		$routeControllerDetails = $this->makeTestController();
+		$router = $this->makeRouter($routeControllerDetails["testProjRoot"]);
+		$this->confirmMimeType($router, $routeControllerDetails, 1, "text/html", "utf-8");
 	}
 
+    /**
+    * @runInSeparateProcess
+    */
+	public function testItShouldUseAnyProvidedResponseMimeType() {
+		$routeControllerDetails = $this->makeTestController();
+		$router = $this->makeRouter($routeControllerDetails["testProjRoot"]);
+		$this->confirmMimeType($router, $routeControllerDetails, "1/json", "application/json");
+	}
+
+    /**
+    * @runInSeparateProcess
+    */
 	public function testItShouldRunTheAppropriateController() {
+		$routeControllerDetails = TemporaryController::make("echo basename(__FILE__, '.php').'-contents';", "controller-2");
+		$router = $this->makeRouter($routeControllerDetails["testProjRoot"]);
+
+		ob_start();
+		$router->go(
+			"GET",
+			"/url/2"
+		);
+		$output = ob_get_contents();
+		ob_end_clean();
+		TemporaryController::tidyUp($routeControllerDetails);
+
+		$this->assertEquals("controller-2-contents", $output);
 	}
 
 	public function testItShouldSupportNamedParameters() {
