@@ -45,6 +45,10 @@ class ExampleRouter extends Router {
 		// Test parameters
 		$this->get("/url/with/parameters/{parameter1}/{parameter2}", "basic-parameter-controller");
 		$this->get("/url/with/regex/parameters/{parameter1:user|group}/{parameter2:[0-9]+}", "regex-parameter-controller");
+		$this->get("/url/with/regex/parameters/with/shortcut/numbers/{parameter1:user|group}/{parameter2:i}", "regex-parameter-shortcut-numbers-controller");
+		$this->get("/url/with/regex/parameters/with/shortcut/alphanumeric/{parameter1:user|group}/{parameter2:a}", "regex-parameter-shortcut-alphanumeric-controller");
+		$this->get("/url/with/regex/parameters/with/shortcut/alphanumericplus/{parameter1:user|group}/{parameter2:c}", "regex-parameter-shortcut-alphanumericplus-controller");
+		$this->get("/url/with/regex/parameters/with/shortcut/hex/{parameter1:user|group}/{parameter2:h}", "regex-parameter-shortcut-hex-controller");
 	}
 }
 
@@ -186,7 +190,7 @@ class TestRouter extends TestCase {
 		if ($urlEnd === null) {
 			$urlEnd = $controllerNumber;
 		}
-		$routeControllerDetails = TemporaryController::make("echo basename(__FILE__, '.php').'-contents';", "controller-".$controllerNumber);
+		$routeControllerDetails = $this->makeTestController($controllerNumber);
 		$router = $this->makeRouter($routeControllerDetails["testProjRoot"]);
 
 		ob_start();
@@ -198,7 +202,7 @@ class TestRouter extends TestCase {
 		ob_end_clean();
 		TemporaryController::tidyUp($routeControllerDetails);
 
-		$this->assertEquals("controller-".$controllerNumber."-contents", $output);
+		$this->assertEquals($routeControllerDetails["expectedOutput"], $output);
 	}
 
     /**
@@ -279,8 +283,12 @@ class TestRouter extends TestCase {
 		$this->confirmMimeType($router, $routeControllerDetails, 1, "image/gif");
 	}
 
-	private function makeTestController($number = 1) {
-		$routeControllerDetails = TemporaryController::make("echo basename(__FILE__, '.php').'-contents';", "controller-1");
+	private function makeTestController($controllerName = "controller-1") {
+		if (ctype_digit((string)$controllerName)) {
+			$controllerName = "controller-".$controllerName;
+		}
+		$routeControllerDetails = TemporaryController::make("echo basename(__FILE__, '.php').'-contents';", $controllerName);
+		$routeControllerDetails["expectedOutput"] = $controllerName."-contents";
 		return $routeControllerDetails;
 	}
 
@@ -333,7 +341,7 @@ class TestRouter extends TestCase {
     * @runInSeparateProcess
     */
 	public function testItShouldRunTheAppropriateController() {
-		$routeControllerDetails = TemporaryController::make("echo basename(__FILE__, '.php').'-contents';", "controller-2");
+		$routeControllerDetails = $this->makeTestController(2);
 		$router = $this->makeRouter($routeControllerDetails["testProjRoot"]);
 
 		ob_start();
@@ -345,7 +353,7 @@ class TestRouter extends TestCase {
 		ob_end_clean();
 		TemporaryController::tidyUp($routeControllerDetails);
 
-		$this->assertEquals("controller-2-contents", $output);
+		$this->assertEquals($routeControllerDetails["expectedOutput"], $output);
 	}
 
     /**
@@ -380,30 +388,54 @@ class TestRouter extends TestCase {
     * @runInSeparateProcess
     */
 	public function testItShouldMatchURLsContainingParametersThatMatchASuppliedRegex() {
-		$routeControllerDetails = TemporaryController::make("echo 'ok';", "regex-parameter-controller");
+		$this->confirmNot404("/url/with/regex/parameters/user/1", "regex-parameter-controller");
+	}
+
+	private function confirmNot404($url, $controllerName) {
+		$routeControllerDetails = $this->makeTestController($controllerName);
 		$router = $this->makeRouter($routeControllerDetails["testProjRoot"]);
 
 		ob_start();
 		$router->go(
 			"GET",
-			"/url/with/regex/parameters/user/1"
+			$url
 		);
 		$output = ob_get_contents();
 		ob_end_clean();
 		TemporaryController::tidyUp($routeControllerDetails);
 
-		$this->assertEquals("ok", $output);
+		$this->assertEquals($routeControllerDetails["expectedOutput"], $output);
 	}
 
+    /**
+    * @runInSeparateProcess
+    */
 	public function testItShouldSupportRegexShortcutForNumbersOnly() {
+		$this->confirm404("/url/with/regex/parameters/with/shortcut/numbers/user/chen");
+		$this->confirmNot404("/url/with/regex/parameters/with/shortcut/numbers/user/15", "regex-parameter-shortcut-numbers-controller");
 	}
 
+    /**
+    * @runInSeparateProcess
+    */
 	public function testItShouldSupportRegexShortcutForAlphanumeric() {
+		$this->confirm404("/url/with/regex/parameters/with/shortcut/alphanumeric/user/@@#");
+		$this->confirmNot404("/url/with/regex/parameters/with/shortcut/alphanumeric/user/chen15", "regex-parameter-shortcut-alphanumeric-controller");
 	}
 
+    /**
+    * @runInSeparateProcess
+    */
 	public function testItShouldSupportRegexShortcutForAlphanumericAndPlusAndUnderscoreAndHyphenAndDot() {
+		$this->confirm404("/url/with/regex/parameters/with/shortcut/alphanumericplus/user/chen15+,-.@");
+		$this->confirmNot404("/url/with/regex/parameters/with/shortcut/alphanumericplus/user/chen15+_-.", "regex-parameter-shortcut-alphanumericplus-controller");
 	}
 
+    /**
+    * @runInSeparateProcess
+    */
 	public function testItShouldSupportRegexShortcutForHexadecimal() {
+		$this->confirm404("/url/with/regex/parameters/with/shortcut/hex/user/12ABcd34Z");
+		$this->confirmNot404("/url/with/regex/parameters/with/shortcut/hex/user/12ABcd34", "regex-parameter-shortcut-hex-controller");
 	}
 }
