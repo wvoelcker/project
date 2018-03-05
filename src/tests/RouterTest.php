@@ -51,6 +51,13 @@ class ExampleRouterThatDoesntCatchExceptions extends ExampleRouter {
 	}
 }
 
+class ExampleRouterWithSpecifiedDefaultMimeType extends ExampleRouter {
+	protected function setUp() {
+		$this->defaultResponseMimeType = "image/gif";
+		parent::setUp();
+	}
+}
+
 class ExampleEnvironment extends Environment {
 	protected function setUp() {
 		$this->requiredFields = array(
@@ -249,7 +256,32 @@ class TestRouter extends TestCase {
 		$this->confirmHttpMethod("GET", "14", "16");
 	}
 
+    /**
+    * @runInSeparateProcess
+    */
 	public function testItShouldUseADefaultResponseMimeTypeIfNoneWasProvided() {
+		if (!function_exists("xdebug_get_headers")) {
+			$this->markTestSkipped("XDebug is not available, so not able to verify headers");
+		}
+
+		$routeControllerDetails = TemporaryController::make("echo basename(__FILE__, '.php').'-contents';", "controller-1");
+
+		$router = ExampleRouterWithSpecifiedDefaultMimeType::create(
+			$routeControllerDetails["testProjRoot"],
+			$this->makeEnvironment()
+		);
+
+		ob_start();
+		$router->go(
+			"GET",
+			"/url/1"
+		);
+		ob_end_clean();
+		TemporaryController::tidyUp($routeControllerDetails);
+		$headersSent = xdebug_get_headers();
+
+		$this->assertTrue(is_array($headersSent));
+		$this->assertTrue(in_array("Content-Type: image/gif; charset=utf-8", $headersSent));
 	}
 
 	public function testItShouldUseTextHtmlAsTheDefaultResponseMimeTypeIfNoDefaultWasProvided() {
