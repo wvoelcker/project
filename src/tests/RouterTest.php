@@ -43,7 +43,7 @@ class ExampleRouter extends Router {
 		$this->get(array("/url/14", "/url/15", "/url/16"), "controller-14");
 
 		// Test parameters
-		$this->get("/url/with/parameters/{parameter1}/{parameter2}", "named-parameter-controller");
+		$this->get("/url/with/parameters/{parameter1}/{parameter2}", "basic-parameter-controller");
 	}
 }
 
@@ -347,7 +347,7 @@ class TestRouter extends TestCase {
     * @runInSeparateProcess
     */
 	public function testItShouldSupportParameters() {
-		$routeControllerDetails = TemporaryController::make("echo \$this->urlParams[0].':'.\$this->urlParams[1];", "named-parameter-controller");
+		$routeControllerDetails = TemporaryController::make("echo \$this->urlParams[0].':'.\$this->urlParams[1];", "basic-parameter-controller");
 		$router = $this->makeRouter($routeControllerDetails["testProjRoot"]);
 
 		ob_start();
