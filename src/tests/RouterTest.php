@@ -44,6 +44,7 @@ class ExampleRouter extends Router {
 
 		// Test parameters
 		$this->get("/url/with/parameters/{parameter1}/{parameter2}", "basic-parameter-controller");
+		$this->get("/url/with/regex/parameters/{parameter1:user|group}/{parameter2:[0-9]+}", "regex-parameter-controller");
 	}
 }
 
@@ -72,13 +73,17 @@ class ExampleEnvironment extends Environment {
 
 class TestRouter extends TestCase {
 	public function testItShouldRunThe404ControllerIfTheRouteWasNotFound() {
+		$this->confirm404("/no/such/url");
+	}
+
+	private function confirm404($url) {
 		$controllerDetails = TemporaryController::make("echo '404 Not Found';", "404");
 		$router = $this->makeRouter($controllerDetails["testProjRoot"]);
 
 		ob_start();
 		$router->go(
 			"GET",
-			"/no/such/path"
+			"/no/such/url"
 		);
 		$output = ob_get_contents();
 		TemporaryController::tidyUp($controllerDetails);
@@ -177,9 +182,9 @@ class TestRouter extends TestCase {
 		$this->confirmHttpMethod("GET", "1");
 	}
 
-	private function confirmHttpMethod($method, $controllerNumber, $urlNumber = null) {
-		if ($urlNumber === null) {
-			$urlNumber = $controllerNumber;
+	private function confirmHttpMethod($method, $controllerNumber, $urlEnd = null) {
+		if ($urlEnd === null) {
+			$urlEnd = $controllerNumber;
 		}
 		$routeControllerDetails = TemporaryController::make("echo basename(__FILE__, '.php').'-contents';", "controller-".$controllerNumber);
 		$router = $this->makeRouter($routeControllerDetails["testProjRoot"]);
@@ -187,7 +192,7 @@ class TestRouter extends TestCase {
 		ob_start();
 		$router->go(
 			$method,
-			"/url/".$urlNumber
+			"/url/".$urlEnd
 		);
 		$output = ob_get_contents();
 		ob_end_clean();
@@ -362,7 +367,32 @@ class TestRouter extends TestCase {
 		$this->assertEquals("p1value:p2value", $output);
 	}
 
-	public function testItShouldSupportParametersWithRegexMatches() {
+    /**
+    * @runInSeparateProcess
+    */
+	public function testItShouldNotMatchURLsContainingParametersThatDoNotMatchASuppliedRegex() {
+		$this->confirm404("/url/with/regex/parameters/section/1");
+		$this->confirm404("/url/with/regex/parameters/user/jo");
+		$this->confirm404("/url/with/regex/parameters/section/articles");
+	}
+
+    /**
+    * @runInSeparateProcess
+    */
+	public function testItShouldMatchURLsContainingParametersThatMatchASuppliedRegex() {
+		$routeControllerDetails = TemporaryController::make("echo 'ok';", "regex-parameter-controller");
+		$router = $this->makeRouter($routeControllerDetails["testProjRoot"]);
+
+		ob_start();
+		$router->go(
+			"GET",
+			"/url/with/regex/parameters/user/1"
+		);
+		$output = ob_get_contents();
+		ob_end_clean();
+		TemporaryController::tidyUp($routeControllerDetails);
+
+		$this->assertEquals("ok", $output);
 	}
 
 	public function testItShouldSupportRegexShortcutForNumbersOnly() {
