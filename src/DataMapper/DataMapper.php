@@ -123,15 +123,15 @@ abstract class DataMapper {
 		}
 	}
 
-	protected function mapFieldsToDatabase($object) {
+	protected final function mapFieldsToDatabase($object) {
 		return $this->mapFields($object);
 	}
 
-	protected function mapFieldsFromDatabase($row) {
+	protected final function mapFieldsFromDatabase($row) {
 		return $this->mapFields($row, false);
 	}
 
-	protected function mapFields($item, $isToDatabase = true) {
+	protected final function mapFields($item, $isToDatabase = true) {
 		$output = array();
 		$mapFunc = ($isToDatabase?0:1);
 		foreach ($this->columnMappings as $applicationField => $databaseField) {

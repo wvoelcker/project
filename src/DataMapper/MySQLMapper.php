@@ -10,7 +10,7 @@ abstract class MySQLMapper extends DataMapper {
 		$this->db = $db;
 	}
 
-	protected function getRows($sortCol, $sortDir, $offset, $maxResults, $criteria = array()) {
+	protected final function getRows($sortCol, $sortDir, $offset, $maxResults, $criteria = array()) {
 		$whereClauseData = $this->generateWhereClauseData($criteria);
 		$query = "SELECT * FROM `".$this->primaryDatabaseTable."` ".$this->generateWhereClause($whereClauseData["whereCriteria"])." ORDER BY `".$sortCol."` ".$sortDir." LIMIT ".$offset.", ".$maxResults;
 
@@ -18,7 +18,7 @@ abstract class MySQLMapper extends DataMapper {
 		$rows = $statement->fetchAll(\PDO::FETCH_ASSOC);
 	}
 
-	protected function countRows($criteria) {
+	protected final function countRows($criteria) {
 		$whereClauseData = $this->generateWhereClauseData($criteria);
 
 		$query = "SELECT COUNT(*) as num FROM `".$this->primaryDatabaseTable."` ".$this->generateWhereClause($whereClauseData["whereCriteria"]);
@@ -28,13 +28,13 @@ abstract class MySQLMapper extends DataMapper {
 		return $row["num"];
 	}
 
-	protected function deleteById($id) {
+	protected final function deleteById($id) {
 		$whereClauseData = $this->generateWhereClauseData(array("id" => $id));
 		$query = "DELETE FROM `".$this->primaryDatabaseTable."` ".$this->generateWhereClause($whereClauseData["whereCriteria"]);
 		$this->prepareAndExecute($query, $whereClauseData["queryData"]);
 	}
 
-	protected function fetchRow($criteria) {
+	protected final function fetchRow($criteria) {
 		$whereClauseData = $this->generateWhereClauseData($criteria);
 
 		$query = "SELECT * FROM `".$this->primaryDatabaseTable."` ".$this->generateWhereClause($whereClauseData["whereCriteria"])." LIMIT 1";
@@ -44,14 +44,14 @@ abstract class MySQLMapper extends DataMapper {
 		return $row;
 	}
 
-	private function generateWhereClause($whereCriteria) {
+	private final function generateWhereClause($whereCriteria) {
 		if (empty($whereCriteria)) {
 			return "";
 		}
 		return "WHERE (".join(") AND (", $whereCriteria).")";
 	}
 
-	private function generateWhereClauseData($criteria) {
+	private final function generateWhereClauseData($criteria) {
 		$whereCriteria = array();
 		$queryData = array();
 
@@ -101,7 +101,7 @@ abstract class MySQLMapper extends DataMapper {
 		return array("whereCriteria" => $whereCriteria, "queryData" => $queryData);
 	}
 
-	protected function getDateCreatedById($id) {
+	protected final function getDateCreatedById($id) {
 		$query = "SELECT created_utc FROM `".$this->primaryDatabaseTable."` WHERE id = :id LIMIT 1";
 
 		$statement = $this->prepareAndExecute($query, array("id" => $id));
@@ -116,7 +116,7 @@ abstract class MySQLMapper extends DataMapper {
 		return $date;
 	}
 
-	protected function doSave($object, $forceInsert = false) {
+	protected final function doSave($object, $forceInsert = false) {
 
 		// Generate column names and values
 		$queryData = array();
@@ -162,7 +162,7 @@ abstract class MySQLMapper extends DataMapper {
 		return $object;
 	}
 
-	protected function doInsertMultiple($objects) {
+	protected final function doInsertMultiple($objects) {
 		$query = "INSERT INTO `".$this->primaryDatabaseTable."` ";
 
 		// Generate data for forming mysql query
@@ -207,7 +207,7 @@ abstract class MySQLMapper extends DataMapper {
 		return $this->prepareAndExecute($query, $queryData);
 	}
 
-	private function prepareAndExecute($query, $data) {
+	private final function prepareAndExecute($query, $data) {
 		$statement = $this->db->prepare($query);
 		$statement->execute($data);
 
