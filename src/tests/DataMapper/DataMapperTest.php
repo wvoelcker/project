@@ -3,75 +3,41 @@ namespace WillV\Project\Tests\DataMapper;
 use PHPUnit\Framework\TestCase;
 use WillV\Project\DataMapper\DataMapper;
 
-class ArrayDBMapper extends DataMapper {
-	protected $data;
+class ExampleDataMapperType extends DataMapper {
+	public $gotRows = array(), $countedRows = array(), $deletedById = array();
+	public $rowsFetched = array(), $dateCreatedGot = array(), $savedSingle = array(), $savedMultiple = array();
 
-	protected function preSetUp() {
-		parent::preSetUp();
-		$this->data = array(
-			"customers" => array(
-				array("id" => 1, "name" => "Alice", "age" => 28, "created_utc" => new \DateTime("1517788800", new \DateTimeZone("UTC"))),
-				array("id" => 2, "name" => "Bob", "age" => 32, "created_utc" => new \DateTime("1517875200", new \DateTimeZone("UTC"))),
-				array("id" => 5, "name" => "Jeremy", "age" => 54, "created_utc" => new \DateTime("1517961600", new \DateTimeZone("UTC"))),
-			),
-			"items" => array(
-				array("id" => 1, "size" => "medium", "name" => "thing1", "itemId" => "abcdef", "created_utc" => new \DateTime("1518048000", new \DateTimeZone("UTC"))),
-				array("id" => 2, "size" => "large", "name" => "thing2", "itemId" => "zx9871b", "created_utc" => new \DateTime("1518134400", new \DateTimeZone("UTC"))),
-				array("id" => 4, "size" => "small", "name" => "thing3", "itemId" => "sdfsk8723", "created_utc" => new \DateTime("1518220800", new \DateTimeZone("UTC"))),
-			),
-			"categories" => array(
-				array("id" => 14, "name" => "Jackets", "category" => "clothing", "created_utc" => new \DateTime("1518307200", new \DateTimeZone("UTC"))),
-				array("id" => 15, "name" => "Baked Beans", "category" => "food", "created_utc" => new \DateTime("1518393600", new \DateTimeZone("UTC"))),
-			),
-		);
-	}
 
 	protected function getRows($sortCol, $sortDir, $offset, $maxResults, $criteria = array()) {
-		$data = $this->data;
-		$data = array_filter($data, function($v) use ($criteria) {
-			foreach ($criteria as $key => $value) {
-				if (!isset($v[$key]) or $v[$key] != $value) {
-					return false;
-				}
-			}
-			return true;
-		});
-		$data = usort($data, function($a, $b) use ($sortCol, $sortDir) {
-
-			// TODO:WV:20180305:Confirm these are the right way roung
-			if ($sortDir == "ASC") {
-				return (int)($a - $b);
-			} else {
-				return (int)($b - $a);
-			}
-		});
+		$this->gotRows[] = func_get_args();
 	}
 
 	protected function countRows($criteria) {
-
+		$this->countedRows[] = func_get_args();
 	}
 
 	protected function deleteById($id) {
-
+		$this->deletedById[] = func_get_args();
 	}
 
 	protected function fetchRow($criteria) {
-
+		$this->rowsFetched[] = func_get_args();
 	}
 
 	protected function getDateCreatedById($id) {
+		$this->dateCreatedGot[] = func_get_args();
 	}
 
 	protected function doSave($object, $forceInsert = false) {
-
+		$this->savedSingle[] = func_get_args();
 	}
 
 	protected function doInsertMultiple($objects) {
-
+		$this->savedMultiple[] = func_get_args();
 	}
 }
 
-class ItemMapper extends ArrayDBMapper {
+class ItemMapper extends ExampleDataMapperType {
 	protected function setUp() {
 		$this->primaryDomainObject = "\WillV\Project\Tests\DataMapper\Item";
 		$this->primaryDatabaseTable = "items";
