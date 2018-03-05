@@ -41,6 +41,9 @@ class ExampleRouter extends Router {
 
 		// Test supplying an array of path patterns
 		$this->get(array("/url/14", "/url/15", "/url/16"), "controller-14");
+
+		// Test parameters
+		$this->get("/url/with/parameters/{parameter1}/{parameter2}", "named-parameter-controller");
 	}
 }
 
@@ -340,10 +343,26 @@ class TestRouter extends TestCase {
 		$this->assertEquals("controller-2-contents", $output);
 	}
 
-	public function testItShouldSupportNamedParameters() {
+    /**
+    * @runInSeparateProcess
+    */
+	public function testItShouldSupportParameters() {
+		$routeControllerDetails = TemporaryController::make("echo \$this->urlParams[0].':'.\$this->urlParams[1];", "named-parameter-controller");
+		$router = $this->makeRouter($routeControllerDetails["testProjRoot"]);
+
+		ob_start();
+		$router->go(
+			"GET",
+			"/url/with/parameters/p1value/p2value"
+		);
+		$output = ob_get_contents();
+		ob_end_clean();
+		TemporaryController::tidyUp($routeControllerDetails);
+
+		$this->assertEquals("p1value:p2value", $output);
 	}
 
-	public function testItShouldSupportNamedParametersWithRegexMatches() {
+	public function testItShouldSupportParametersWithRegexMatches() {
 	}
 
 	public function testItShouldSupportRegexShortcutForNumbersOnly() {
