@@ -104,7 +104,7 @@ abstract class DataMapper {
 		$id = $object->get("id");
 
 		if (empty($id)) {
-			return null;
+			throw new \Exception("Cannot get creation dates of objects with no ID");
 		}
 
 		$date = $this->getDateCreatedById($id);
