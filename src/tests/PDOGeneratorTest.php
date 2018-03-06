@@ -5,7 +5,7 @@ use WillV\Project\PDOGenerator;
 
 class TestPDOGenerator extends TestCase {
 
-	// NOTE: These tests require the following user to be able to connect to the MySQL process
+	// NOTE: These tests require the following user to be able to connect to the MySQL process and create and drop databases
 	private $hostname = "localhost", $username = "phpunit", $password = "phpunit";
 
 	public function testItShouldReturnAPDOGeneratorWhenCreateIsCalled() {
