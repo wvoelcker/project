@@ -51,10 +51,24 @@ abstract class ExampleDataMapperType extends DataMapper {
 	}
 
 	protected function getRows($sortCol, $sortDir, $offset, $maxResults, $criteria = array()) {
-		$filtered = $this->filter($this->testData, $criteria);
 
-		// TODO:WV:20180306:Add dummy sorting, offset, etc
-		return $filtered;
+		if ($sortCol != "id" and $sortCol != "size") {
+			throw new \Exception("Sorting by columns other than id and size not supported in this test");
+		}
+
+		$output = $this->filter($this->testData, $criteria);
+
+		usort($output, function($a, $b) use ($sortCol, $sortDir) {
+			if ($sortDir == "asc") {
+				return $b[$sortCol] - $a[$sortCol];
+			} else {
+				return $a[$sortCol] - $b[$sortCol];
+			}
+		});
+
+		$output = array_slice($output, $offset, $maxResults);
+
+		return $output;
 	}
 
 	protected function countRows($criteria) {
@@ -183,8 +197,30 @@ class TestDataMapper extends TestCase {
 		$this->assertEquals(9, $items[1]->get("id"));
 	}
 
-	public function testItShouldFetchTheCorrectRowsWhenGeneratingAPageOfObjects() {
+	public function testItShouldAllowNotFilteringByCriteriaWhenGeneratingAPageOfObjects() {
+		$mapper = ItemMapper::create();
+		$items = $mapper->generatePage("id", "asc", 0, 10);
+		$this->assertEquals(4, count($items));
+		$this->assertEquals(1, $items[0]->get("id"));
+		$this->assertEquals(2, $items[1]->get("id"));
+		$this->assertEquals(4, $items[2]->get("id"));
+		$this->assertEquals(9, $items[3]->get("id"));
+	}
 
+	public function testItShouldAllowForAnOffsetWhenGeneratingAPageOfObjects() {
+		$mapper = ItemMapper::create();
+		$items = $mapper->generatePage("id", "asc", 2, 10);
+		$this->assertEquals(2, count($items));
+		$this->assertEquals(4, $items[0]->get("id"));
+		$this->assertEquals(9, $items[1]->get("id"));
+	}
+
+	public function testItShouldAllowForAMaxResultsNumberWhenGeneratingAPageOfObjects() {
+		$mapper = ItemMapper::create();
+		$items = $mapper->generatePage("id", "asc", 1, 2);
+		$this->assertEquals(2, count($items));
+		$this->assertEquals(2, $items[0]->get("id"));
+		$this->assertEquals(4, $items[1]->get("id"));
 	}
 
 	public function testItShouldSortRowsByTheCorrectColumnWhenGeneratingAPageOfObjects() {
