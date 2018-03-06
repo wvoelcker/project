@@ -1,5 +1,5 @@
 <?php
-namespace WillV\Project\DataMapper\DataMapper;
+namespace WillV\Project\DataMapper;
 use WillV\Project\Trait_AbstractTemplate;
 
 abstract class DataMapper {
