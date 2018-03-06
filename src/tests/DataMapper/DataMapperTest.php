@@ -400,11 +400,42 @@ class TestDataMapper extends TestCase {
 	}
 
 	public function testItShouldExplicitlyInsertASingleObject() {
-
+		$item = Item::create(array(
+			"id" => 97,
+			"size" => "medium",
+			"name" => "thing6",
+			"itemId" => "q1w2e3r4",
+		));
+		$mapper = ItemMapper::create();
+		$mapper->insert($item);
+		$this->assertEquals(97, $mapper->testData[4]["id"]);
 	}
 
 	public function testItShouldInsertMultipleObjects() {
-
+		$items = array();
+		$items[] = Item::create(array(
+			"id" => 97,
+			"size" => "medium",
+			"name" => "thing6",
+			"itemId" => "q1w2e3r4",
+		));
+		$items[] = Item::create(array(
+			"id" => 98,
+			"size" => "medium",
+			"name" => "thing7",
+			"itemId" => "mxncvsdjhf",
+		));
+		$items[] = Item::create(array(
+			"id" => 99,
+			"size" => "medium",
+			"name" => "thing8",
+			"itemId" => "pksjshdf87123",
+		));
+		$mapper = ItemMapper::create();
+		$mapper->insert($items);
+		$this->assertEquals(97, $mapper->testData[4]["id"]);
+		$this->assertEquals(98, $mapper->testData[5]["id"]);
+		$this->assertEquals(99, $mapper->testData[6]["id"]);
 	}
 
 
