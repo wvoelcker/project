@@ -72,7 +72,81 @@ class ItemDataset extends Dataset {
 }
 
 class TestDataMapper extends TestCase {
-	public function testFirstTest() {
-		echo "fish\n";
+
+	public function testItShouldFindAnObjectById() {
 	}
+
+	public function testItSHouldFindASingleObjectByCriteriaOtherThanId() {
+
+	}
+
+	public function testItShouldThrowAnExceptionIfTheSortDirectionWasInvalidWhenGeneratingAPageOfObjects() {
+
+	}
+
+	public function testItShouldThrowAnExceptionIfTheOffsetWasNotAnIntegerWhenGeneratingAPageOfObjects() {
+
+	}
+
+	public function testItShouldThrowAnExceptionIfTheMaximumNumberOfResultsWasNotAnIntegerWhenGeneratingAPageOfObjects() {
+
+	}
+
+	public function testItShouldThrowAnExceptionIfAttemptingToSortByAPropertyNameThatDoesNotMapDirectlyToAColumnNameWhenGeneratingAPageOfObjects() {
+
+	}
+
+	public function testItShouldFetchTheCorrectRowsWhenGeneratingAPageOfObjects() {
+
+	}
+
+	public function testItShouldConvertTheDatabaseDataIntoDomainObjectsWhenGeneratingAPageOfObjects() {
+
+	}
+
+	public function testItShouldMapDomainObjectToDatabaseColumnsByDirectNameMappings() {
+
+	}
+
+	public function testItShouldMapDomainObjectPropertiesToDatabaseColumnsByFunctions() {
+
+	}
+
+	public function testItShouldMapDatabaseColumnsToDomainObjectPropertiesByDirectNameMappings() {
+
+	}
+
+	public function testItShouldMapDatabaseColumnsToDomainObjectPropertiesByFunctions() {
+
+	}
+
+	public function testItShouldThrowAnExceptionWhenAttemptingToDeleteAnObjectWithNoId() {
+
+	}
+
+	public function testItShouldDeleteAnObjectThatHasAnId() {
+
+	}
+
+	public function testItShouldReturnNullWhenAttemptingToGetTheCreationDateOfAnObjectWithNoId() {
+
+	}
+
+	public function testItShouldReturnTheCreationDateOfAnObjectThatDoesHaveAnId() {
+
+	}
+
+	public function testItShouldSaveAnObject() {
+
+	}
+
+	public function testItShouldInsertASingleObject() {
+
+	}
+
+	public function testItShouldInsertMultipleObjects() {
+
+	}
+
+
 }
