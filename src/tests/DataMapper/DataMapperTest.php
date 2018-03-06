@@ -141,7 +141,9 @@ abstract class ExampleDataMapperType extends DataMapper {
 	}
 
 	protected function doInsertMultiple($objects) {
-		$this->savedMultiple[] = func_get_args();
+		foreach ($objects as $object) {
+			$this->doSave($object, true);
+		}
 	}
 }
 
