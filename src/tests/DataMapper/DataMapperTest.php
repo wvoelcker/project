@@ -59,11 +59,12 @@ abstract class ExampleDataMapperType extends DataMapper {
 		$output = $this->filter($this->testData, $criteria);
 
 		usort($output, function($a, $b) use ($sortCol, $sortDir) {
+
 			if (is_string($a[$sortCol])) {
 				if ($sortDir == "asc") {
-					return strcasecmp($b[$sortCol], $a[$sortCol]);
-				} else {
 					return strcasecmp($a[$sortCol], $b[$sortCol]);
+				} else {
+					return strcasecmp($b[$sortCol], $a[$sortCol]);
 				}
 			} else {
 				if ($sortDir == "asc") {
@@ -111,7 +112,26 @@ abstract class ExampleDataMapperType extends DataMapper {
 	}
 
 	protected function doSave($object, $forceInsert = false) {
-		$this->savedSingle[] = func_get_args();
+		$id = $object->get("id");
+		$existingIndex = null;
+		if (!empty($id)) {
+			foreach ($this->testData as $i => $row) {
+				if ($row["id"] == $object->get("id")) {
+					$existingIndex = $i;
+					break;
+				}
+			}
+		}
+		if (empty($id)) {
+			echo "id: ".(max(array_map(function($v) { return $v["id"]; }, $this->testData)) + 1)."\n";
+			$object->set("id", max(array_map(function($v) { return $v["id"]; }, $this->testData)) + 1);
+		}
+		$dataForDB = $this->mapFieldsToDatabase($object);
+		if ($forceInsert or empty($existingIndex)) {
+			$this->testData[] = $dataForDB;
+		} else {
+			$this->testData[$existingIndex] = $dataForDB;
+		}
 	}
 
 	protected function doInsertMultiple($objects) {
@@ -134,7 +154,7 @@ class ItemMapper extends ExampleDataMapperType {
 				function($object) {
 					return array(
 						"key" => "item_id",
-						"value" => base64_encode($object->itemId)
+						"value" => base64_encode($object->get("itemId"))
 					);
 				},
 				function($row) {
@@ -233,29 +253,59 @@ class TestDataMapper extends TestCase {
 	}
 
 	public function testItShouldSortRowsByTheCorrectColumnWhenGeneratingAPageOfObjects() {
+		$this->confirmSorting("asc");
+	}
+
+	private function confirmSorting($sortDir) {
 		$mapper = ItemMapper::create();
-		$items = $mapper->generatePage("size", "asc", 0, 10);
+		$items = $mapper->generatePage("size", $sortDir, 0, 10);
 		$this->assertEquals(4, count($items));
-		$this->assertEquals("large", $items[0]->get("size"));
-		$this->assertEquals("large", $items[1]->get("size"));
-		$this->assertEquals("medium", $items[2]->get("size"));
-		$this->assertEquals("small", $items[3]->get("size"));
+
+		if ($sortDir == "asc") {
+			$this->assertEquals("large", $items[0]->get("size"));
+			$this->assertEquals("large", $items[1]->get("size"));
+			$this->assertEquals("medium", $items[2]->get("size"));
+			$this->assertEquals("small", $items[3]->get("size"));
+		} else {
+			$this->assertEquals("small", $items[0]->get("size"));
+			$this->assertEquals("medium", $items[1]->get("size"));
+			$this->assertEquals("large", $items[2]->get("size"));
+			$this->assertEquals("large", $items[3]->get("size"));
+		}
 	}
 
 	public function testItShouldSupportSortingRowsInBothAscendingAndDescendingOrderWhenGeneratingAPageOfObjects() {
-
+		$this->confirmSorting("asc");
+		$this->confirmSorting("desc");
 	}
 
 	public function testItShouldConvertTheDatabaseDataIntoDomainObjectsWhenGeneratingAPageOfObjects() {
-
+		$mapper = ItemMapper::create();
+		$items = $mapper->generatePage("id", "asc", 0, 2);
+		$this->assertTrue($items[0] instanceof Item);
+		$this->assertTrue($items[1] instanceof Item);
 	}
 
 	public function testItShouldMapDomainObjectToDatabaseColumnsByDirectNameMappings() {
-
+		$item = Item::create(array(
+			"id" => 10,
+			"size" => "medium",
+			"name" => "thing5",
+			"itemId" => "q1w2e3r4",
+		));
+		$mapper = ItemMapper::create();
+		$mapper->save($item);
+		$this->assertTrue($mapper->testData[4]["id"] == 10);
+		$this->assertTrue($mapper->testData[4]["size"] == "medium");
+		$this->assertTrue($mapper->testData[4]["name"] == "thing5");
 	}
 
 	public function testItShouldMapDomainObjectPropertiesToDatabaseColumnsByFunctions() {
-
+		$mapper = ItemMapper::create();
+		$item = $mapper->findById(2);
+		$this->assertEquals(2, $item->get("id"));
+		$this->assertEquals("thing2", $item->get("name"));
+		$this->assertEquals("large", $item->get("size"));
 	}
 
 	public function testItShouldMapDatabaseColumnsToDomainObjectPropertiesByDirectNameMappings() {
@@ -282,11 +332,15 @@ class TestDataMapper extends TestCase {
 
 	}
 
-	public function testItShouldSaveAnObject() {
+	public function testItShouldSaveAnObjectWithoutAnId() {
 
 	}
 
-	public function testItShouldInsertASingleObject() {
+	public function testItShouldSaveAnObjectWithAnId() {
+
+	}
+
+	public function testItShouldExplicitlyInsertASingleObject() {
 
 	}
 
