@@ -59,11 +59,20 @@ abstract class ExampleDataMapperType extends DataMapper {
 		$output = $this->filter($this->testData, $criteria);
 
 		usort($output, function($a, $b) use ($sortCol, $sortDir) {
-			if ($sortDir == "asc") {
-				return $b[$sortCol] - $a[$sortCol];
+			if (is_string($a[$sortCol])) {
+				if ($sortDir == "asc") {
+					return strcasecmp($b[$sortCol], $a[$sortCol]);
+				} else {
+					return strcasecmp($a[$sortCol], $b[$sortCol]);
+				}
 			} else {
-				return $a[$sortCol] - $b[$sortCol];
+				if ($sortDir == "asc") {
+					return $b[$sortCol] - $a[$sortCol];
+				} else {
+					return $a[$sortCol] - $b[$sortCol];
+				}
 			}
+
 		});
 
 		$output = array_slice($output, $offset, $maxResults);
@@ -224,7 +233,13 @@ class TestDataMapper extends TestCase {
 	}
 
 	public function testItShouldSortRowsByTheCorrectColumnWhenGeneratingAPageOfObjects() {
-
+		$mapper = ItemMapper::create();
+		$items = $mapper->generatePage("size", "asc", 0, 10);
+		$this->assertEquals(4, count($items));
+		$this->assertEquals("large", $items[0]->get("size"));
+		$this->assertEquals("large", $items[1]->get("size"));
+		$this->assertEquals("medium", $items[2]->get("size"));
+		$this->assertEquals("small", $items[3]->get("size"));
 	}
 
 	public function testItShouldSupportSortingRowsInBothAscendingAndDescendingOrderWhenGeneratingAPageOfObjects() {
