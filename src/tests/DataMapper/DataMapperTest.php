@@ -43,6 +43,28 @@ class ItemMapper extends ExampleDataMapperType {
 		$this->primaryDomainObject = "\WillV\Project\Tests\DataMapper\Item";
 		$this->primaryDatabaseTable = "items";
 	}
+
+	protected function getColumnMappings() {
+		return array(
+			"id" => "id",
+			"size" => "size",
+			"name" => "name",
+			"itemId" => array(
+				function($object) {
+					return array(
+						"key" => "item_id",
+						"value" => base64_encode($object->itemId)
+					);
+				},
+				function($row) {
+					return array(
+						"key" => "itemId",
+						"value" => base64_decode($row["item_id"])
+					);
+				}
+			)
+		);
+	}
 }
 
 class Item extends DomainObject {
