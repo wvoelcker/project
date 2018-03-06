@@ -64,46 +64,44 @@ class ItemMapper extends MySQLMapper {
 
 class TestDataMapper extends TestCase {
 
-	// NOTE: These tests require the following user to be able to connect to the MySQL process and create and drop databases
-	private $hostname = "localhost", $username = "phpunit", $password = "phpunit";
+	// NOTE: These tests require the following user to be able to connect to the MySQL process and create and drop databases, and to create temporary tables
+	static private $hostname = "localhost", $username = "phpunit", $password = "phpunit";
 
 	// This will change each time the test is run
-	private $databasename;
+	static private $databasename;
 
 	protected function preSetUp() {
 		parent::preSetUp();
 
 	}
 
-	public function setUpBeforeClass() {
-		$pdo = $this->getPDO(false);
-		$this->databasename = "test_".md5(microtime().rand());
-		$this->prepareAndExecute($pdo, "CREATE DATABASE `".$this->databasename."`", array());
+	static public function setUpBeforeClass() {
+		$pdo = self::getPDO(false);
+		self::$databasename = "test_".md5(microtime().rand());
+		self::prepareAndExecute($pdo, "CREATE DATABASE `".self::$databasename."`", array());
 	}
 
-	public function tearDownAfterClass() {
-		$pdo = $this->getPDO(false);
-		$this->prepareAndExecute($pdo, "DROP DATABASE `".$this->databasename."`", array());
+	static public function tearDownAfterClass() {
+		$pdo = self::getPDO(false);
+		self::prepareAndExecute($pdo, "DROP DATABASE `".self::$databasename."`", array());
 	}
 
-	private function getPDO($includeDB = true) {
+	static private function getPDO($includeDB = true) {
 
 		if (empty($includeDB)) {
 			$generator = PDOGenerator::create(
-				$this->hostname,
-				$this->username,
-				$this->password
+				self::$hostname,
+				self::$username,
+				self::$password
 			);			
 		} else {
 			$generator = PDOGenerator::create(
-				$this->hostname,
-				$this->username,
-				$this->password,
-				$this->databasename
+				self::$hostname,
+				self::$username,
+				self::$password,
+				self::$databasename
 			);
 		}
-
-
 
 		try {
 			$pdo = $generator->getPDO();
@@ -118,7 +116,7 @@ class TestDataMapper extends TestCase {
 		return $pdo;
 	}
 
-	private function prepareAndExecute($pdo, $query, $data) {
+	static private function prepareAndExecute($pdo, $query, $data = array()) {
 		$statement = $pdo->prepare($query);
 		$statement->execute($data);
 
@@ -127,20 +125,43 @@ class TestDataMapper extends TestCase {
 
 	public function setUp() {
 		$testData = array(
-			array("id" => 1, "size" => "medium", "name" => "thing1", "item_id" => "YWJjZGVm", "created_utc" => new \DateTime("@1518048000", new \DateTimeZone("UTC"))),
-			array("id" => 2, "size" => "large", "name" => "thing2", "item_id" => "eng5ODcxYg==", "created_utc" => new \DateTime("@1518134400", new \DateTimeZone("UTC"))),
-			array("id" => 4, "size" => "small", "name" => "thing3", "item_id" => "c2Rmc2s4NzIz", "created_utc" => new \DateTime("@1518220800", new \DateTimeZone("UTC"))),
-			array("id" => 9, "size" => "large", "name" => "thing4", "item_id" => "ZGZjdg==", "created_utc" => new \DateTime("@1518220805", new \DateTimeZone("UTC"))),
+			array("id" => 1, "size" => "medium", "name" => "thing1", "item_id" => "YWJjZGVm", "created_utc" => "2018-02-08 00:00:00", "updated_utc" => "2018-02-08 00:10:00"),
+			array("id" => 2, "size" => "large", "name" => "thing2", "item_id" => "eng5ODcxYg==", "created_utc" => "2018-03-08 00:00:00", "updated_utc" => "2018-03-08 20:00:00"),
+			array("id" => 4, "size" => "small", "name" => "thing3", "item_id" => "c2Rmc2s4NzIz", "created_utc" => "2018-04-08 00:00:00", "updated_utc" => "2018-04-08 00:30:00"),
+			array("id" => 9, "size" => "large", "name" => "thing4", "item_id" => "ZGZjdg==", "created_utc" => "2018-05-08 00:00:00", "updated_utc" => "2018-05-08 00:40:00"),
 		);
 
-		$pdo = $this->getPDO();
+		$pdo = self::getPDO();
 
-		// Create temporary table in memory
-		// Insert test data
+		self::prepareAndExecute($pdo, "
+			CREATE TEMPORARY TABLE `users` (
+				`id` int(11) NOT NULL AUTO_INCREMENT,
+				`name` varchar(100) DEFAULT NULL,
+				PRIMARY KEY (`id`)
+			) ENGINE=MEMORY
+		");
+
+		self::prepareAndExecute($pdo, "
+			CREATE TEMPORARY TABLE `items` (
+				`id` int(11) NOT NULL AUTO_INCREMENT,
+				`size` varchar(50) DEFAULT NULL,
+				`name` varchar(100) DEFAULT NULL,
+				`item_id` varchar(50) DEFAULT NULL,
+				`created_utc` datetime DEFAULT NULL,
+				`updated_utc` datetime DEFAULT NULL,
+				PRIMARY KEY (`id`)
+			) ENGINE=MEMORY
+		");
+
+		foreach ($testData as $testDatum) {
+			self::prepareAndExecute($pdo, "INSERT INTO items SET id=:id, size=:size, name=:name, item_id=:item_id, created_utc=:created_utc, updated_utc=:updated_utc", $testDatum);
+		}
 	}
 
 	public function tearDown() {
-		// Drop temporary table
+		$pdo = self::getPDO();
+		self::prepareAndExecute($pdo, "DROP TABLE `users`");
+		self::prepareAndExecute($pdo, "DROP TABLE `items`");
 	}
 
 	public function testItShouldFindAnObjectById() {
@@ -149,46 +170,12 @@ class TestDataMapper extends TestCase {
 		$this->assertEquals("thing2", $item->get("name"));
 	}
 
+	// TODO:WV:20180306:Test setting and maintaining creation and updated dates, somehow
+
 	public function testItShouldFindASingleObjectByCriteriaOtherThanId() {
 		$mapper = ItemMapper::create();
 		$item = $mapper->findSingleFromCriteria(array("size" => "small"));
 		$this->assertEquals("thing3", $item->get("name"));
-	}
-
-    /**
-     * @expectedException Exception
-     * @expectedExceptionMessage Invalid sort direction (should be 'asc' or 'desc')
-     */
-	public function testItShouldThrowAnExceptionIfTheSortDirectionWasInvalidWhenGeneratingAPageOfObjects() {
-		$mapper = ItemMapper::create();
-		$items = $mapper->generatePage("id", "sideways", 0, 10);
-	}
-
-    /**
-     * @expectedException Exception
-     * @expectedExceptionMessage Invalid offset
-     */
-	public function testItShouldThrowAnExceptionIfTheOffsetWasNotAnIntegerWhenGeneratingAPageOfObjects() {
-		$mapper = ItemMapper::create();
-		$items = $mapper->generatePage("id", "asc", "zero", 10);
-	}
-
-    /**
-     * @expectedException Exception
-     * @expectedExceptionMessage Invalid maximum results
-     */
-	public function testItShouldThrowAnExceptionIfTheMaximumNumberOfResultsWasNotAnIntegerWhenGeneratingAPageOfObjects() {
-		$mapper = ItemMapper::create();
-		$items = $mapper->generatePage("id", "asc", 0, "ten");
-	}
-
-    /**
-     * @expectedException Exception
-     * @expectedExceptionMessage Can only sort by application properties that directly map to database columns
-     */
-	public function testItShouldThrowAnExceptionIfAttemptingToSortByAPropertyNameThatDoesNotMapDirectlyToAColumnNameWhenGeneratingAPageOfObjects() {
-		$mapper = ItemMapper::create();
-		$items = $mapper->generatePage("itemId", "asc", 0, 10);
 	}
 
 	public function testItShouldAllowFilteringByCriteriaWhenGeneratingAPageOfObjects() {
@@ -260,80 +247,12 @@ class TestDataMapper extends TestCase {
 		$this->assertTrue($items[1] instanceof Item);
 	}
 
-	public function testItShouldMapDomainObjectPropertiesToDatabaseColumnsByDirectNameMappings() {
-		$item = Item::create(array(
-			"id" => 10,
-			"size" => "medium",
-			"name" => "thing5",
-			"itemId" => "q1w2e3r4",
-		));
-		$mapper = ItemMapper::create();
-		$mapper->save($item);
-		$this->assertEquals(10, $mapper->testData[4]["id"]);
-		$this->assertEquals("medium", $mapper->testData[4]["size"]);
-		$this->assertEquals("thing5", $mapper->testData[4]["name"]);
-	}
-
-	public function testItShouldMapDomainObjectPropertiesToDatabaseColumnsByFunctions() {
-		$item = Item::create(array(
-			"id" => 10,
-			"size" => "medium",
-			"name" => "thing5",
-			"itemId" => "q1w2e3r4",
-		));
-		$mapper = ItemMapper::create();
-		$mapper->save($item);
-		$this->assertEquals("cTF3MmUzcjQ=", $mapper->testData[4]["item_id"]);
-	}
-
-	public function testItShouldMapDatabaseColumnsToDomainObjectPropertiesByDirectNameMappings() {
-		$mapper = ItemMapper::create();
-		$item = $mapper->findById(2);
-		$this->assertEquals(2, $item->get("id"));
-		$this->assertEquals("thing2", $item->get("name"));
-		$this->assertEquals("large", $item->get("size"));
-	}
-
-	public function testItShouldMapDatabaseColumnsToDomainObjectPropertiesByFunctions() {
-		$mapper = ItemMapper::create();
-		$item = $mapper->findById(2);
-		$this->assertEquals("zx9871b", $item->get("itemId"));
-	}
-
-    /**
-     * @expectedException Exception
-     * @expectedExceptionMessage Cannot delete objects with no ID
-     */
-	public function testItShouldThrowAnExceptionWhenAttemptingToDeleteAnObjectWithNoId() {
-		$item = Item::create(array(
-			"size" => "medium",
-			"name" => "thing9",
-			"itemId" => "cn76sdfkj190",
-		));
-		$mapper = ItemMapper::create();
-		$mapper->delete($item);
-	}
-
 	public function testItShouldDeleteAnObjectThatHasAnId() {
 		$mapper = ItemMapper::create();
 		$item = $mapper->findById(2);
 		$mapper->delete($item);
 		$index = $mapper->getIndexById(2);
 		$this->assertEmpty($index);
-	}
-
-    /**
-     * @expectedException Exception
-     * @expectedExceptionMessage Cannot get creation dates of objects with no ID
-     */
-	public function testItShouldThrowAnExceptionWhenAttemptingToGetTheCreationDateOfAnObjectWithNoId() {
-		$item = Item::create(array(
-			"size" => "medium",
-			"name" => "thing9",
-			"itemId" => "cn76sdfkj190",
-		));
-		$mapper = ItemMapper::create();
-		$mapper->getDateCreated($item);
 	}
 
 	public function testItShouldReturnTheCreationDateOfAnObjectThatDoesHaveAnId() {
