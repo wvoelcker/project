@@ -188,6 +188,17 @@ class TestDataMapper extends TestCase {
 		$this->assertEquals("thing3", $item->get("name"));
 	}
 
+	public function testItShouldNotThrowAnExceptionIfThereWereNoResultsWhenGeneratingAPageOfObjects() {
+		$mapper = $this->getMapper();
+		$e = null;
+		try {
+			$items = $mapper->generatePage("id", "asc", 0, 10, array("name" => "non-existent item"));
+		} catch (\Exception $e) {
+			// Do nothing
+		}
+		$this->assertEmpty($e);
+	}
+
 	public function testItShouldAllowFilteringByCriteriaWhenGeneratingAPageOfObjects() {
 		$mapper = $this->getMapper();
 		$items = $mapper->generatePage("id", "asc", 0, 10, array("size" => "large"));
