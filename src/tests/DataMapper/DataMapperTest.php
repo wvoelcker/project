@@ -130,7 +130,7 @@ abstract class ExampleDataMapperType extends DataMapper {
 		}
 	}
 
-	protected function getIndexById($id) {
+	public function getIndexById($id) {
 		foreach ($this->testData as $i => $row) {
 			if ($row["id"] == $id) {
 				return $i;
@@ -347,7 +347,11 @@ class TestDataMapper extends TestCase {
 	}
 
 	public function testItShouldDeleteAnObjectThatHasAnId() {
-
+		$mapper = ItemMapper::create();
+		$item = $mapper->findById(2);
+		$mapper->delete($item);
+		$index = $mapper->getIndexById(2);
+		$this->assertEmpty($index);
 	}
 
 	public function testItShouldReturnNullWhenAttemptingToGetTheCreationDateOfAnObjectWithNoId() {
