@@ -165,21 +165,26 @@ class TestDataMapper extends TestCase {
 	}
 
 	public function testItShouldFindAnObjectById() {
-		$mapper = ItemMapper::create();
+		$mapper = $this->getMapper();
 		$item = $mapper->findById(2);
 		$this->assertEquals("thing2", $item->get("name"));
+	}
+
+	private function getMapper() {
+		$pdo = self::getPDO();
+		return ItemMapper::create($pdo);
 	}
 
 	// TODO:WV:20180306:Test setting and maintaining creation and updated dates, somehow
 
 	public function testItShouldFindASingleObjectByCriteriaOtherThanId() {
-		$mapper = ItemMapper::create();
+		$mapper = $this->getMapper();
 		$item = $mapper->findSingleFromCriteria(array("size" => "small"));
 		$this->assertEquals("thing3", $item->get("name"));
 	}
 
 	public function testItShouldAllowFilteringByCriteriaWhenGeneratingAPageOfObjects() {
-		$mapper = ItemMapper::create();
+		$mapper = $this->getMapper();
 		$items = $mapper->generatePage("id", "asc", 0, 10, array("size" => "large"));
 		$this->assertEquals(2, count($items));
 		$this->assertEquals(2, $items[0]->get("id"));
@@ -187,7 +192,7 @@ class TestDataMapper extends TestCase {
 	}
 
 	public function testItShouldAllowNotFilteringByCriteriaWhenGeneratingAPageOfObjects() {
-		$mapper = ItemMapper::create();
+		$mapper = $this->getMapper();
 		$items = $mapper->generatePage("id", "asc", 0, 10);
 		$this->assertEquals(4, count($items));
 		$this->assertEquals(1, $items[0]->get("id"));
@@ -197,7 +202,7 @@ class TestDataMapper extends TestCase {
 	}
 
 	public function testItShouldAllowForAnOffsetWhenGeneratingAPageOfObjects() {
-		$mapper = ItemMapper::create();
+		$mapper = $this->getMapper();
 		$items = $mapper->generatePage("id", "asc", 2, 10);
 		$this->assertEquals(2, count($items));
 		$this->assertEquals(4, $items[0]->get("id"));
@@ -205,7 +210,7 @@ class TestDataMapper extends TestCase {
 	}
 
 	public function testItShouldAllowForAMaxResultsNumberWhenGeneratingAPageOfObjects() {
-		$mapper = ItemMapper::create();
+		$mapper = $this->getMapper();
 		$items = $mapper->generatePage("id", "asc", 1, 2);
 		$this->assertEquals(2, count($items));
 		$this->assertEquals(2, $items[0]->get("id"));
@@ -217,7 +222,7 @@ class TestDataMapper extends TestCase {
 	}
 
 	private function confirmSorting($sortDir) {
-		$mapper = ItemMapper::create();
+		$mapper = $this->getMapper();
 
 		$items = $mapper->generatePage("size", $sortDir, 0, 10);
 		$this->assertEquals(4, count($items));
@@ -241,14 +246,14 @@ class TestDataMapper extends TestCase {
 	}
 
 	public function testItShouldConvertTheDatabaseDataIntoDomainObjectsWhenGeneratingAPageOfObjects() {
-		$mapper = ItemMapper::create();
+		$mapper = $this->getMapper();
 		$items = $mapper->generatePage("id", "asc", 0, 2);
 		$this->assertTrue($items[0] instanceof Item);
 		$this->assertTrue($items[1] instanceof Item);
 	}
 
 	public function testItShouldDeleteAnObjectThatHasAnId() {
-		$mapper = ItemMapper::create();
+		$mapper = $this->getMapper();
 		$item = $mapper->findById(2);
 		$mapper->delete($item);
 		$index = $mapper->getIndexById(2);
@@ -256,7 +261,7 @@ class TestDataMapper extends TestCase {
 	}
 
 	public function testItShouldReturnTheCreationDateOfAnObjectThatDoesHaveAnId() {
-		$mapper = ItemMapper::create();
+		$mapper = $this->getMapper();
 		$item = $mapper->findById(2);
 		$dateTime = $mapper->getDateCreated($item);
 		$this->assertEquals(1518134400, $dateTime->format("U"));
@@ -268,7 +273,7 @@ class TestDataMapper extends TestCase {
 			"name" => "thing5",
 			"itemId" => "q1w2e3r4",
 		));
-		$mapper = ItemMapper::create();
+		$mapper = $this->getMapper();
 		$mapper->save($item);
 		$this->assertEquals("thing5", $mapper->testData[4]["name"]);
 	}
@@ -280,7 +285,7 @@ class TestDataMapper extends TestCase {
 			"name" => "thing6",
 			"itemId" => "q1w2e3r4",
 		));
-		$mapper = ItemMapper::create();
+		$mapper = $this->getMapper();
 		$mapper->save($item);
 		$this->assertEquals(97, $mapper->testData[4]["id"]);
 	}
@@ -292,7 +297,7 @@ class TestDataMapper extends TestCase {
 			"name" => "thing6",
 			"itemId" => "q1w2e3r4",
 		));
-		$mapper = ItemMapper::create();
+		$mapper = $this->getMapper();
 		$mapper->insert($item);
 		$this->assertEquals(97, $mapper->testData[4]["id"]);
 	}
@@ -318,7 +323,7 @@ class TestDataMapper extends TestCase {
 			"name" => "thing8",
 			"itemId" => "pksjshdf87123",
 		));
-		$mapper = ItemMapper::create();
+		$mapper = $this->getMapper();
 		$mapper->insert($items);
 		$this->assertEquals(97, $mapper->testData[4]["id"]);
 		$this->assertEquals(98, $mapper->testData[5]["id"]);
