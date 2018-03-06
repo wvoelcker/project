@@ -354,8 +354,18 @@ class TestDataMapper extends TestCase {
 		$this->assertEmpty($index);
 	}
 
-	public function testItShouldReturnNullWhenAttemptingToGetTheCreationDateOfAnObjectWithNoId() {
-
+    /**
+     * @expectedException Exception
+     * @expectedExceptionMessage Cannot get creation dates of objects with no ID
+     */
+	public function testItShouldThrowAnExceptionWhenAttemptingToGetTheCreationDateOfAnObjectWithNoId() {
+		$item = Item::create(array(
+			"size" => "medium",
+			"name" => "thing9",
+			"itemId" => "cn76sdfkj190",
+		));
+		$mapper = ItemMapper::create();
+		$mapper->getDateCreated($item);
 	}
 
 	public function testItShouldReturnTheCreationDateOfAnObjectThatDoesHaveAnId() {
