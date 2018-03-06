@@ -332,8 +332,18 @@ class TestDataMapper extends TestCase {
 		$this->assertEquals("zx9871b", $item->get("itemId"));
 	}
 
+    /**
+     * @expectedException Exception
+     * @expectedExceptionMessage Cannot delete objects with no ID
+     */
 	public function testItShouldThrowAnExceptionWhenAttemptingToDeleteAnObjectWithNoId() {
-
+		$item = Item::create(array(
+			"size" => "medium",
+			"name" => "thing9",
+			"itemId" => "cn76sdfkj190",
+		));
+		$mapper = ItemMapper::create();
+		$mapper->delete($item);
 	}
 
 	public function testItShouldDeleteAnObjectThatHasAnId() {
