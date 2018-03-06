@@ -86,7 +86,9 @@ abstract class ExampleDataMapperType extends DataMapper {
 	}
 
 	protected function deleteById($id) {
-		$this->deletedById[] = func_get_args();
+		$index = $this->getIndexById($id);
+		unset($this->testData[$index]);
+		$this->testData = array_values($this->testData);
 	}
 
 	protected function fetchRow($criteria) {
@@ -115,15 +117,9 @@ abstract class ExampleDataMapperType extends DataMapper {
 		$id = $object->get("id");
 		$existingIndex = null;
 		if (!empty($id)) {
-			foreach ($this->testData as $i => $row) {
-				if ($row["id"] == $object->get("id")) {
-					$existingIndex = $i;
-					break;
-				}
-			}
+			$existingIndex = $this->getIndexById($id);
 		}
 		if (empty($id)) {
-			echo "id: ".(max(array_map(function($v) { return $v["id"]; }, $this->testData)) + 1)."\n";
 			$object->set("id", max(array_map(function($v) { return $v["id"]; }, $this->testData)) + 1);
 		}
 		$dataForDB = $this->mapFieldsToDatabase($object);
@@ -132,6 +128,15 @@ abstract class ExampleDataMapperType extends DataMapper {
 		} else {
 			$this->testData[$existingIndex] = $dataForDB;
 		}
+	}
+
+	protected function getIndexById($id) {
+		foreach ($this->testData as $i => $row) {
+			if ($row["id"] == $id) {
+				return $i;
+			}
+		}
+		return null;
 	}
 
 	protected function doInsertMultiple($objects) {
