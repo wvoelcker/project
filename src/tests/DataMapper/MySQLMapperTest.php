@@ -35,7 +35,7 @@ class ItemDataset extends Dataset {
 
 class ItemMapper extends MySQLMapper {
 	protected function setUp() {
-		$this->primaryDomainObject = "\WillV\Project\Tests\DataMapper\Item";
+		$this->primaryDomainObject = __NAMESPACE__."\Item";
 		$this->primaryDatabaseTable = "items";
 	}
 
@@ -87,33 +87,39 @@ class TestDataMapper extends TestCase {
 	}
 
 	static private function getPDO($includeDB = true) {
+		static $pdos = array();
 
-		if (empty($includeDB)) {
-			$generator = PDOGenerator::create(
-				self::$hostname,
-				self::$username,
-				self::$password
-			);			
-		} else {
-			$generator = PDOGenerator::create(
-				self::$hostname,
-				self::$username,
-				self::$password,
-				self::$databasename
-			);
-		}
+		if (empty($pdos[(bool)$includeDB])) {
 
-		try {
-			$pdo = $generator->getPDO();
-		} catch (\PDOException $e) {
-			if ($e->getMessage() == "could not find driver") {
-				$this->markTestSkipped("MySQL driver not available");
+			if (empty($includeDB)) {
+				$generator = PDOGenerator::create(
+					self::$hostname,
+					self::$username,
+					self::$password
+				);
 			} else {
-				throw $e;
+				$generator = PDOGenerator::create(
+					self::$hostname,
+					self::$username,
+					self::$password,
+					self::$databasename
+				);
 			}
+
+			try {
+				$pdo = $generator->getPDO();
+			} catch (\PDOException $e) {
+				if ($e->getMessage() == "could not find driver") {
+					$this->markTestSkipped("MySQL driver not available");
+				} else {
+					throw $e;
+				}
+			}
+
+			$pdos[(bool)$includeDB] = $pdo;
 		}
 
-		return $pdo;
+		return $pdos[(bool)$includeDB];
 	}
 
 	static private function prepareAndExecute($pdo, $query, $data = array()) {
@@ -132,7 +138,6 @@ class TestDataMapper extends TestCase {
 		);
 
 		$pdo = self::getPDO();
-
 		self::prepareAndExecute($pdo, "
 			CREATE TEMPORARY TABLE `users` (
 				`id` int(11) NOT NULL AUTO_INCREMENT,
