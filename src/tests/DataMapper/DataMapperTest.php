@@ -59,18 +59,18 @@ abstract class ExampleDataMapperType extends DataMapper {
 		$output = $this->filter($this->testData, $criteria);
 
 		usort($output, function($a, $b) use ($sortCol, $sortDir) {
-
+			$sortDir = strtoupper($sortDir);
 			if (is_string($a[$sortCol])) {
-				if ($sortDir == "asc") {
+				if ($sortDir == "ASC") {
 					return strcasecmp($a[$sortCol], $b[$sortCol]);
 				} else {
 					return strcasecmp($b[$sortCol], $a[$sortCol]);
 				}
 			} else {
-				if ($sortDir == "asc") {
-					return $b[$sortCol] - $a[$sortCol];
-				} else {
+				if ($sortDir == "ASC") {
 					return $a[$sortCol] - $b[$sortCol];
+				} else {
+					return $b[$sortCol] - $a[$sortCol];
 				}
 			}
 
@@ -258,6 +258,7 @@ class TestDataMapper extends TestCase {
 
 	private function confirmSorting($sortDir) {
 		$mapper = ItemMapper::create();
+
 		$items = $mapper->generatePage("size", $sortDir, 0, 10);
 		$this->assertEquals(4, count($items));
 
