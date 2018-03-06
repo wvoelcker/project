@@ -110,7 +110,8 @@ abstract class ExampleDataMapperType extends DataMapper {
 	}
 
 	protected function getDateCreatedById($id) {
-		$this->dateCreatedGot[] = func_get_args();
+		$index = $this->getIndexById($id);
+		return $this->testData[$index]["created_utc"];
 	}
 
 	protected function doSave($object, $forceInsert = false) {
@@ -369,7 +370,10 @@ class TestDataMapper extends TestCase {
 	}
 
 	public function testItShouldReturnTheCreationDateOfAnObjectThatDoesHaveAnId() {
-
+		$mapper = ItemMapper::create();
+		$item = $mapper->findById(2);
+		$dateTime = $mapper->getDateCreated($item);
+		$this->assertEquals(1518134400, $dateTime->format("U"));
 	}
 
 	public function testItShouldSaveAnObjectWithoutAnId() {
