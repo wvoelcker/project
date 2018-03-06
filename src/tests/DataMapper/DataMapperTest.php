@@ -5,10 +5,9 @@ use WillV\Project\DataMapper\DataMapper;
 use WillV\Project\DomainObject;
 use WillV\Project\Dataset;
 
-class ExampleDataMapperType extends DataMapper {
+abstract class ExampleDataMapperType extends DataMapper {
 	public $gotRows = array(), $countedRows = array(), $deletedById = array();
 	public $rowsFetched = array(), $dateCreatedGot = array(), $savedSingle = array(), $savedMultiple = array();
-
 
 	protected function getRows($sortCol, $sortDir, $offset, $maxResults, $criteria = array()) {
 		$this->gotRows[] = func_get_args();
