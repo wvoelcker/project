@@ -377,7 +377,14 @@ class TestDataMapper extends TestCase {
 	}
 
 	public function testItShouldSaveAnObjectWithoutAnId() {
-
+		$item = Item::create(array(
+			"size" => "medium",
+			"name" => "thing5",
+			"itemId" => "q1w2e3r4",
+		));
+		$mapper = ItemMapper::create();
+		$mapper->save($item);
+		$this->assertEquals("thing5", $mapper->testData[4]["name"]);
 	}
 
 	public function testItShouldSaveAnObjectWithAnId() {
