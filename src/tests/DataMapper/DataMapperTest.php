@@ -16,7 +16,7 @@ class ItemDataset extends Dataset {
 	protected function setUp() {
 		$this->fields = array(
 			"id" => array(
-				"customValidation" => "ctype_digit",
+				"customValidation" => function($v) { return ctype_digit((string)$v); },
 			),
 			"size" => array(
 				"allowedValues" => array("small", "medium", "large"),
@@ -43,14 +43,18 @@ abstract class ExampleDataMapperType extends DataMapper {
 	protected function preSetUp() {
 		parent::preSetUp();
 		$this->testData = array(
-			array("id" => "1", "size" => "medium", "name" => "thing1", "item_id" => "YWJjZGVm", "created_utc" => new \DateTime("@1518048000", new \DateTimeZone("UTC"))),
-			array("id" => "2", "size" => "large", "name" => "thing2", "item_id" => "eng5ODcxYg==", "created_utc" => new \DateTime("@1518134400", new \DateTimeZone("UTC"))),
-			array("id" => "4", "size" => "small", "name" => "thing3", "item_id" => "c2Rmc2s4NzIz", "created_utc" => new \DateTime("@1518220800", new \DateTimeZone("UTC"))),
+			array("id" => 1, "size" => "medium", "name" => "thing1", "item_id" => "YWJjZGVm", "created_utc" => new \DateTime("@1518048000", new \DateTimeZone("UTC"))),
+			array("id" => 2, "size" => "large", "name" => "thing2", "item_id" => "eng5ODcxYg==", "created_utc" => new \DateTime("@1518134400", new \DateTimeZone("UTC"))),
+			array("id" => 4, "size" => "small", "name" => "thing3", "item_id" => "c2Rmc2s4NzIz", "created_utc" => new \DateTime("@1518220800", new \DateTimeZone("UTC"))),
+			array("id" => 9, "size" => "large", "name" => "thing4", "item_id" => "ZGZjdg==", "created_utc" => new \DateTime("@1518220805", new \DateTimeZone("UTC"))),
 		);
 	}
 
 	protected function getRows($sortCol, $sortDir, $offset, $maxResults, $criteria = array()) {
-		$this->gotRows[] = func_get_args();
+		$filtered = $this->filter($this->testData, $criteria);
+
+		// TODO:WV:20180306:Add dummy sorting, offset, etc
+		return $filtered;
 	}
 
 	protected function countRows($criteria) {
@@ -135,23 +139,59 @@ class TestDataMapper extends TestCase {
 		$this->assertEquals("thing3", $item->get("name"));
 	}
 
+    /**
+     * @expectedException Exception
+     * @expectedExceptionMessage Invalid sort direction (should be 'asc' or 'desc')
+     */
 	public function testItShouldThrowAnExceptionIfTheSortDirectionWasInvalidWhenGeneratingAPageOfObjects() {
-
+		$mapper = ItemMapper::create();
+		$items = $mapper->generatePage("id", "sideways", 0, 10);
 	}
 
+    /**
+     * @expectedException Exception
+     * @expectedExceptionMessage Invalid offset
+     */
 	public function testItShouldThrowAnExceptionIfTheOffsetWasNotAnIntegerWhenGeneratingAPageOfObjects() {
-
+		$mapper = ItemMapper::create();
+		$items = $mapper->generatePage("id", "asc", "zero", 10);
 	}
 
+    /**
+     * @expectedException Exception
+     * @expectedExceptionMessage Invalid maximum results
+     */
 	public function testItShouldThrowAnExceptionIfTheMaximumNumberOfResultsWasNotAnIntegerWhenGeneratingAPageOfObjects() {
-
+		$mapper = ItemMapper::create();
+		$items = $mapper->generatePage("id", "asc", 0, "ten");
 	}
 
+    /**
+     * @expectedException Exception
+     * @expectedExceptionMessage Can only sort by application properties that directly map to database columns
+     */
 	public function testItShouldThrowAnExceptionIfAttemptingToSortByAPropertyNameThatDoesNotMapDirectlyToAColumnNameWhenGeneratingAPageOfObjects() {
+		$mapper = ItemMapper::create();
+		$items = $mapper->generatePage("itemId", "asc", 0, 10);
+	}
 
+	public function testItShouldAllowFilteringByCriteriaWhenGeneratingAPageOfObjects() {
+		$mapper = ItemMapper::create();
+		$items = $mapper->generatePage("id", "asc", 0, 10, array("size" => "large"));
+		$this->assertEquals(2, count($items));
+		$this->assertEquals(2, $items[0]->get("id"));
+		$this->assertEquals(9, $items[1]->get("id"));
 	}
 
 	public function testItShouldFetchTheCorrectRowsWhenGeneratingAPageOfObjects() {
+
+	}
+
+	public function testItShouldSortRowsByTheCorrectColumnWhenGeneratingAPageOfObjects() {
+
+	}
+
+	public function testItShouldSupportSortingRowsInBothAscendingAndDescendingOrderWhenGeneratingAPageOfObjects() {
 
 	}
 
