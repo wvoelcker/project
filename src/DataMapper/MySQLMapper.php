@@ -16,6 +16,7 @@ abstract class MySQLMapper extends DataMapper {
 
 		$statement = $this->prepareAndExecute($query, $whereClauseData["queryData"]);
 		$rows = $statement->fetchAll(\PDO::FETCH_ASSOC);
+		return $rows;
 	}
 
 	protected final function countRows($criteria) {
