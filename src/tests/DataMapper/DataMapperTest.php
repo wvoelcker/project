@@ -97,6 +97,7 @@ class ItemDataset extends Dataset {
 class TestDataMapper extends TestCase {
 
 	public function testItShouldFindAnObjectById() {
+		$mapper = ItemMapper::create();
 	}
 
 	public function testItSHouldFindASingleObjectByCriteriaOtherThanId() {
