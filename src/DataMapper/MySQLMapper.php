@@ -168,7 +168,7 @@ abstract class MySQLMapper extends DataMapper {
 		// Generate data for forming mysql query
 		$queryData = array();
 		$isFirst = true;
-		foreach ($objects as $objectId => $object) {
+		foreach ($objects as $object) {
 
 			$fieldNames = array();
 			$numFields = 0;
