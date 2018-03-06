@@ -427,8 +427,9 @@ class TestDataMapper extends TestCase {
 			"name" => "thing7",
 			"itemId" => "mxncvsdjhf",
 		));
+
+		// TODO:WV:20180306:Confirm desired behaviour if one item doesn't have an ID
 		$items[] = Item::create(array(
-			"id" => 99,
 			"size" => "medium",
 			"name" => "thing8",
 			"itemId" => "pksjshdf87123",
