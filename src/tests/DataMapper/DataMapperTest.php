@@ -292,7 +292,7 @@ class TestDataMapper extends TestCase {
 		$this->assertTrue($items[1] instanceof Item);
 	}
 
-	public function testItShouldMapDomainObjectToDatabaseColumnsByDirectNameMappings() {
+	public function testItShouldMapDomainObjectPropertiesToDatabaseColumnsByDirectNameMappings() {
 		$item = Item::create(array(
 			"id" => 10,
 			"size" => "medium",
@@ -301,12 +301,24 @@ class TestDataMapper extends TestCase {
 		));
 		$mapper = ItemMapper::create();
 		$mapper->save($item);
-		$this->assertTrue($mapper->testData[4]["id"] == 10);
-		$this->assertTrue($mapper->testData[4]["size"] == "medium");
-		$this->assertTrue($mapper->testData[4]["name"] == "thing5");
+		$this->assertEquals(10, $mapper->testData[4]["id"]);
+		$this->assertEquals("medium", $mapper->testData[4]["size"]);
+		$this->assertEquals("thing5", $mapper->testData[4]["name"]);
 	}
 
 	public function testItShouldMapDomainObjectPropertiesToDatabaseColumnsByFunctions() {
+		$item = Item::create(array(
+			"id" => 10,
+			"size" => "medium",
+			"name" => "thing5",
+			"itemId" => "q1w2e3r4",
+		));
+		$mapper = ItemMapper::create();
+		$mapper->save($item);
+		$this->assertEquals("cTF3MmUzcjQ=", $mapper->testData[4]["item_id"]);
+	}
+
+	public function testItShouldMapDatabaseColumnsToDomainObjectPropertiesByDirectNameMappings() {
 		$mapper = ItemMapper::create();
 		$item = $mapper->findById(2);
 		$this->assertEquals(2, $item->get("id"));
@@ -314,12 +326,10 @@ class TestDataMapper extends TestCase {
 		$this->assertEquals("large", $item->get("size"));
 	}
 
-	public function testItShouldMapDatabaseColumnsToDomainObjectPropertiesByDirectNameMappings() {
-
-	}
-
 	public function testItShouldMapDatabaseColumnsToDomainObjectPropertiesByFunctions() {
-
+		$mapper = ItemMapper::create();
+		$item = $mapper->findById(2);
+		$this->assertEquals("zx9871b", $item->get("itemId"));
 	}
 
 	public function testItShouldThrowAnExceptionWhenAttemptingToDeleteAnObjectWithNoId() {
