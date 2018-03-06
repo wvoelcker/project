@@ -1,7 +1,4 @@
 <?php
-/*
- * TODO:WV:20151218:Unit test this
- */
 namespace WillV\Project;
 
 
