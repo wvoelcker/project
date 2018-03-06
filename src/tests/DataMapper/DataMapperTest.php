@@ -2,6 +2,8 @@
 namespace WillV\Project\Tests\DataMapper;
 use PHPUnit\Framework\TestCase;
 use WillV\Project\DataMapper\DataMapper;
+use WillV\Project\DomainObject;
+use WillV\Project\Dataset;
 
 class ExampleDataMapperType extends DataMapper {
 	public $gotRows = array(), $countedRows = array(), $deletedById = array();
