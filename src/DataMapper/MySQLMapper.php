@@ -139,18 +139,17 @@ abstract class MySQLMapper extends DataMapper {
 		}
 
 		// Generate field names and values
-		$query = "";
+		$assignmentList = "";
 		foreach ($fieldsForSQL as $fieldName) {
-			$query .= ", `".$fieldName."`= ? ";
+			$assignmentList .= ", `".$fieldName."`= ? ";
 		}
-		$query = substr($query, 2);
+		$assignmentList = substr($assignmentList, 2);
 
 		// Generate the rest of the SQL query
-		if ($isInsert) {
-			$query = "INSERT INTO `".$this->primaryDatabaseTable."` SET ".$query;
-		} else {
-			$query = "UPDATE `".$this->primaryDatabaseTable."` SET ".$query." WHERE id = ?";
-			$queryData[] = $object->get("id");
+		$query = "INSERT INTO `".$this->primaryDatabaseTable."` SET ".$assignmentList;
+		if (!$isInsert) {
+			$query .= " ON DUPLICATE KEY UPDATE ".$assignmentList;
+			$queryData = array_merge($queryData, $queryData);
 		}
 
 		// Run query

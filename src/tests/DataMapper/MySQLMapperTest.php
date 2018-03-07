@@ -297,6 +297,16 @@ class TestDataMapper extends TestCase {
 
 	// TODO:WV:20180306:Work on consistent treatment of cases where there is an ID but that row is not the in DB, across Datamapper types (e.g. between here and the sample in datamapper test)
 	public function testItShouldSaveAnObjectWithAnId() {
+		$item = Item::create(array(
+			"id" => 97,
+			"size" => "medium",
+			"name" => "thing6",
+			"itemId" => "q1w2e3r4",
+		));
+		$mapper = $this->getMapper();
+		$mapper->save($item);
+		$itemFromDB = $mapper->findSingleFromCriteria(array("name" => "thing6"));
+		$this->assertEquals(97, $itemFromDB->get("id"));
 	}
 
 	public function testItShouldUpdateAnObjectAlreadyInTheDatabase() {
