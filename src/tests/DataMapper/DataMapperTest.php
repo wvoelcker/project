@@ -403,6 +403,15 @@ class TestDataMapper extends TestCase {
 		$this->assertEquals(97, $mapper->testData[4]["id"]);
 	}
 
+	public function testItShouldUpdateAnObjectAlreadyInTheDatabase() {
+		$mapper = ItemMapper::create();
+		$item = $mapper->findById(2);
+		$item->set("name", "newname");
+		$mapper->save($item);
+		$itemFromDB = $mapper->findById(2);
+		$this->assertEquals("newname", $itemFromDB->get("name"));
+	}
+
 	public function testItShouldExplicitlyInsertASingleObject() {
 		$item = Item::create(array(
 			"id" => 97,

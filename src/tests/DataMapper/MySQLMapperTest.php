@@ -295,7 +295,6 @@ class TestDataMapper extends TestCase {
 		$this->assertEquals("medium", $itemFromDB->get("size"));
 	}
 
-	// TODO:WV:20180306:Work on consistent treatment of cases where there is an ID but that row is not the in DB, across Datamapper types (e.g. between here and the sample in datamapper test)
 	public function testItShouldSaveAnObjectWithAnId() {
 		$item = Item::create(array(
 			"id" => 97,
