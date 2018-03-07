@@ -272,15 +272,15 @@ class TestDataMapper extends TestCase {
 		$mapper = $this->getMapper();
 		$item = $mapper->findById(2);
 		$mapper->delete($item);
-		$index = $mapper->getIndexById(2);
-		$this->assertEmpty($index);
+		$item = $mapper->findById(2);
+		$this->assertEmpty($item);
 	}
 
 	public function testItShouldReturnTheCreationDateOfAnObjectThatDoesHaveAnId() {
 		$mapper = $this->getMapper();
 		$item = $mapper->findById(2);
 		$dateTime = $mapper->getDateCreated($item);
-		$this->assertEquals(1518134400, $dateTime->format("U"));
+		$this->assertEquals(1520467200, $dateTime->format("U"));
 	}
 
 	public function testItShouldSaveAnObjectWithoutAnId() {
@@ -291,19 +291,21 @@ class TestDataMapper extends TestCase {
 		));
 		$mapper = $this->getMapper();
 		$mapper->save($item);
-		$this->assertEquals("thing5", $mapper->testData[4]["name"]);
+		$itemFromDB = $mapper->findSingleFromCriteria(array("name" => "thing5"));
+		$this->assertEquals("medium", $itemFromDB->get("size"));
 	}
 
+	// TODO:WV:20180306:Work on consistent treatment of cases where there is an ID but that row is not the in DB, across Datamapper types (e.g. between here and the sample in datamapper test)
 	public function testItShouldSaveAnObjectWithAnId() {
-		$item = Item::create(array(
-			"id" => 97,
-			"size" => "medium",
-			"name" => "thing6",
-			"itemId" => "q1w2e3r4",
-		));
+	}
+
+	public function testItShouldUpdateAnObjectAlreadyInTheDatabase() {
 		$mapper = $this->getMapper();
+		$item = $mapper->findById(2);
+		$item->set("name", "newname");
 		$mapper->save($item);
-		$this->assertEquals(97, $mapper->testData[4]["id"]);
+		$itemFromDB = $mapper->findById(2);
+		$this->assertEquals("newname", $itemFromDB->get("name"));
 	}
 
 	public function testItShouldExplicitlyInsertASingleObject() {
@@ -315,7 +317,8 @@ class TestDataMapper extends TestCase {
 		));
 		$mapper = $this->getMapper();
 		$mapper->insert($item);
-		$this->assertEquals(97, $mapper->testData[4]["id"]);
+		$itemFromDB = $mapper->findSingleFromCriteria(array("name" => "thing6"));
+		$this->assertEquals(97, $itemFromDB->get("id"));
 	}
 
 	public function testItShouldInsertMultipleObjects() {
@@ -341,10 +344,9 @@ class TestDataMapper extends TestCase {
 		));
 		$mapper = $this->getMapper();
 		$mapper->insert($items);
-		$this->assertEquals(97, $mapper->testData[4]["id"]);
-		$this->assertEquals(98, $mapper->testData[5]["id"]);
-		$this->assertEquals(99, $mapper->testData[6]["id"]);
+		$this->assertEquals(97, $mapper->findSingleFromCriteria(array("name" => "thing6"))->get("id"));
+		$this->assertEquals(98, $mapper->findSingleFromCriteria(array("name" => "thing7"))->get("id"));
+		$this->assertEquals(99, $mapper->findSingleFromCriteria(array("name" => "thing8"))->get("id"));
 	}
-
 
 }

@@ -190,6 +190,8 @@ class TestDataMapper extends TestCase {
 		$this->assertEquals("thing3", $item->get("name"));
 	}
 
+	// TODO:WV:20180306:Test for exception when attempting to use non-directly mapped columns as criteria
+
     /**
      * @expectedException Exception
      * @expectedExceptionMessage Invalid sort direction (should be 'asc' or 'desc')
