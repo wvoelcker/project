@@ -110,7 +110,7 @@ class TestDataMapper extends TestCase {
 				$pdo = $generator->getPDO();
 			} catch (\PDOException $e) {
 				if ($e->getMessage() == "could not find driver") {
-					$this->markTestSkipped("MySQL driver not available");
+					self::markTestSkipped("MySQL driver not available");
 				} else {
 					throw $e;
 				}
