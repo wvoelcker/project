@@ -370,7 +370,7 @@ class TestDataMapper extends TestCase {
 
     /**
      * @expectedException Exception
-     * @expectedExceptionMessage Cannot get creation dates of objects with no ID
+     * @expectedExceptionMessage Cannot get created dates of objects with no ID
      */
 	public function testItShouldThrowAnExceptionWhenAttemptingToGetTheCreationDateOfAnObjectWithNoId() {
 		$item = Item::create(array(
