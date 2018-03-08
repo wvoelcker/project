@@ -180,8 +180,6 @@ class TestDataMapper extends TestCase {
 		return ItemMapper::create($pdo);
 	}
 
-	// TODO:WV:20180306:Test setting and maintaining creation and updated dates, somehow
-
 	public function testItShouldFindASingleObjectByCriteriaOtherThanId() {
 		$mapper = $this->getMapper();
 		$item = $mapper->findSingleFromCriteria(array("size" => "small"));
@@ -306,6 +304,46 @@ class TestDataMapper extends TestCase {
 		$mapper->save($item);
 		$itemFromDB = $mapper->findSingleFromCriteria(array("name" => "thing6"));
 		$this->assertEquals(97, $itemFromDB->get("id"));
+	}
+
+	public function testItShouldSaveCreationDates() {
+		$item = Item::create(array(
+			"id" => 97,
+			"size" => "medium",
+			"name" => "thing6",
+			"itemId" => "q1w2e3r4",
+		));
+		$mapper = $this->getMapper();
+
+		$timebeforesave = time();
+		$mapper->save($item);
+		sleep(2);
+		$objectFromDB = $mapper->findById(97);
+		$dateCreated = $mapper->getDateCreated($objectFromDB);
+		$dateCreatedUnix = $dateCreated->format("U");
+		$this->assertTrue($dateCreatedUnix == $timebeforesave || ($dateCreatedUnix == $timebeforesave + 1));
+	}
+
+	public function testItShouldSaveUpdatedDates() {
+		$item = Item::create(array(
+			"id" => 97,
+			"size" => "medium",
+			"name" => "thing6",
+			"itemId" => "q1w2e3r4",
+		));
+		$mapper = $this->getMapper();
+
+		$timebeforesave = time();
+		$mapper->save($item);
+		sleep(2);
+		$timebeforeupdate = time();
+		$item->set("size", "large");
+		$mapper->save($item);
+		sleep(2);
+		$objectFromDB = $mapper->findById(97);
+		$dateUpdated = $mapper->getDateUpdated($objectFromDB);
+		$dateUpdatedUnix = $dateUpdated->format("U");
+		$this->assertTrue($dateUpdatedUnix == $timebeforeupdate || ($dateUpdatedUnix == $timebeforeupdate + 1));
 	}
 
 	public function testItShouldUpdateAnObjectAlreadyInTheDatabase() {

@@ -103,7 +103,25 @@ abstract class MySQLMapper extends DataMapper {
 	}
 
 	protected final function getDateCreatedById($id) {
-		$query = "SELECT created_utc FROM `".$this->primaryDatabaseTable."` WHERE id = :id LIMIT 1";
+		$dates = $this->getDatesById($id);
+		if (empty($dates)) {
+			return null;
+		}
+
+		return $dates["created_utc"];
+	}
+
+	protected final function getDateUpdatedById($id) {
+		$dates = $this->getDatesById($id);
+		if (empty($dates)) {
+			return null;
+		}
+
+		return $dates["updated_utc"];
+	}
+
+	private function getDatesById($id) {
+		$query = "SELECT created_utc, updated_utc FROM `".$this->primaryDatabaseTable."` WHERE id = :id LIMIT 1";
 
 		$statement = $this->prepareAndExecute($query, array("id" => $id));
 		$row = $statement->fetch(\PDO::FETCH_ASSOC);
@@ -112,12 +130,13 @@ abstract class MySQLMapper extends DataMapper {
 			return null;
 		}
 
-		$date = new \DateTime($row["created_utc"], new \DateTimeZone("UTC"));
-
-		return $date;
+		return array(
+			"created_utc" => new \DateTime("@".strtotime($row["created_utc"]), new \DateTimeZone("UTC")),
+			"updated_utc" => new \DateTime("@".strtotime($row["updated_utc"]), new \DateTimeZone("UTC")),
+		);
 	}
 
-	protected final function doSave($object, $forceInsert = false) {
+	protected final function doSave($object) {
 
 		// Generate column names and values
 		$queryData = array();
@@ -129,28 +148,20 @@ abstract class MySQLMapper extends DataMapper {
 
 		// Add modified and created dates
 		$now = gmdate("Y-m-d H:i:s");
+		$creationDateIndex = count($fieldsForSQL);
+		$fieldsForSQL[] = "created_utc";
 		$queryData[] = $now;
 		$fieldsForSQL[] = "updated_utc";
+		$queryData[] = $now;
 		$id = $object->get("id");
-		$isInsert = (empty($id) or $forceInsert);
-		if ($isInsert) {
-			$fieldsForSQL[] = "created_utc";
-			$queryData[] = $now;
-		}
 
 		// Generate field names and values
-		$assignmentList = "";
-		foreach ($fieldsForSQL as $fieldName) {
-			$assignmentList .= ", `".$fieldName."`= ? ";
-		}
-		$assignmentList = substr($assignmentList, 2);
+		$assignmentList = $this->buildAssignmentList($fieldsForSQL);
 
 		// Generate the rest of the SQL query
 		$query = "INSERT INTO `".$this->primaryDatabaseTable."` SET ".$assignmentList;
-		if (!$isInsert) {
-			$query .= " ON DUPLICATE KEY UPDATE ".$assignmentList;
-			$queryData = array_merge($queryData, $queryData);
-		}
+		$query .= " ON DUPLICATE KEY UPDATE ".$this->buildAssignmentList($this->removeFromArray($fieldsForSQL, $creationDateIndex));
+		$queryData = array_merge($queryData, $this->removeFromArray($queryData, $creationDateIndex));
 
 		// Run query
 		$this->prepareAndExecute($query, $queryData);
@@ -160,6 +171,21 @@ abstract class MySQLMapper extends DataMapper {
 		}
 
 		return $object;
+	}
+
+	private function removeFromArray($array, $offset) {
+		unset($array[$offset]);
+		return array_values($array);
+	}
+
+	private function buildAssignmentList($allFields) {
+		$assignmentList = "";
+		foreach ($allFields as $fieldName) {
+			$assignmentList .= ", `".$fieldName."`= ? ";
+		}
+		$assignmentList = substr($assignmentList, 2);
+
+		return $assignmentList;
 	}
 
 	protected final function doInsertMultiple($objects) {

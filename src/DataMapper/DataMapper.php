@@ -101,14 +101,28 @@ abstract class DataMapper {
 	}
 
 	public function getDateCreated($object) {
+		return $this->getDate("created", $object);
+	}
+
+	public function getDateUpdated($object) {
+		return $this->getDate("updated", $object);
+	}
+
+	private function getDate($type, $object) {
 		$id = $object->get("id");
 
 		if (empty($id)) {
-			throw new \Exception("Cannot get creation dates of objects with no ID");
+			throw new \Exception("Cannot get ".$type." dates of objects with no ID");
 		}
 
-		$date = $this->getDateCreatedById($id);
-		return $date;
+		switch ($type) {
+			case "created":
+				return $this->getDateCreatedById($id);
+			case "updated":
+				return $this->getDateUpdatedById($id);
+			default:
+				throw new \Exception("Unknown date type");
+		}
 	}
 
 	public function save($object) {
@@ -116,11 +130,10 @@ abstract class DataMapper {
 	}
 
 	public function insert($objects) {
-		if (is_array($objects)) {
-			return $this->doInsertMultiple($objects);
-		} else {
-			return $this->doSave($objects, true);
+		if (!is_array($objects)) {
+			$objects = array($objects);
 		}
+		return $this->doInsertMultiple($objects);
 	}
 
 	protected final function mapFieldsToDatabase($object) {
@@ -161,6 +174,7 @@ abstract class DataMapper {
 	abstract protected function deleteById($id);
 	abstract protected function fetchRow($criteria);
 	abstract protected function getDateCreatedById($id);
-	abstract protected function doSave($object, $forceInsert = false);
+	abstract protected function getDateUpdatedById($id);
+	abstract protected function doSave($object);
 	abstract protected function doInsertMultiple($objects);
 }

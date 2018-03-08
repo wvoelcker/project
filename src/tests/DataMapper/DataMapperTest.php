@@ -43,10 +43,10 @@ abstract class ExampleDataMapperType extends DataMapper {
 	protected function preSetUp() {
 		parent::preSetUp();
 		$this->testData = array(
-			array("id" => 1, "size" => "medium", "name" => "thing1", "item_id" => "YWJjZGVm", "created_utc" => new \DateTime("@1518048000", new \DateTimeZone("UTC"))),
-			array("id" => 2, "size" => "large", "name" => "thing2", "item_id" => "eng5ODcxYg==", "created_utc" => new \DateTime("@1518134400", new \DateTimeZone("UTC"))),
-			array("id" => 4, "size" => "small", "name" => "thing3", "item_id" => "c2Rmc2s4NzIz", "created_utc" => new \DateTime("@1518220800", new \DateTimeZone("UTC"))),
-			array("id" => 9, "size" => "large", "name" => "thing4", "item_id" => "ZGZjdg==", "created_utc" => new \DateTime("@1518220805", new \DateTimeZone("UTC"))),
+			array("id" => 1, "size" => "medium", "name" => "thing1", "item_id" => "YWJjZGVm", "created_utc" => new \DateTime("@1518048000", new \DateTimeZone("UTC")), "updated_utc" => new \DateTime("@1518048002", new \DateTimeZone("UTC"))),
+			array("id" => 2, "size" => "large", "name" => "thing2", "item_id" => "eng5ODcxYg==", "created_utc" => new \DateTime("@1518134400", new \DateTimeZone("UTC")), "updated_utc" => new \DateTime("@1518134402", new \DateTimeZone("UTC"))),
+			array("id" => 4, "size" => "small", "name" => "thing3", "item_id" => "c2Rmc2s4NzIz", "created_utc" => new \DateTime("@1518220800", new \DateTimeZone("UTC")), "updated_utc" => new \DateTime("@1518220802", new \DateTimeZone("UTC"))),
+			array("id" => 9, "size" => "large", "name" => "thing4", "item_id" => "ZGZjdg==", "created_utc" => new \DateTime("@1518220805", new \DateTimeZone("UTC")), "updated_utc" => new \DateTime("@1518220807", new \DateTimeZone("UTC"))),
 		);
 	}
 
@@ -114,7 +114,16 @@ abstract class ExampleDataMapperType extends DataMapper {
 		return $this->testData[$index]["created_utc"];
 	}
 
-	protected function doSave($object, $forceInsert = false) {
+	protected function getDateUpdatedById($id) {
+		$index = $this->getIndexById($id);
+		return $this->testData[$index]["updated_utc"];
+	}
+
+	protected function doSave($object) {
+		return $this->doSaveWithForceInsertOption($object);
+	}
+
+	private function doSaveWithForceInsertOption($object, $forceInsert = false) {
 		$id = $object->get("id");
 		$existingIndex = null;
 		if (!empty($id)) {
@@ -124,7 +133,7 @@ abstract class ExampleDataMapperType extends DataMapper {
 			$object->set("id", max(array_map(function($v) { return $v["id"]; }, $this->testData)) + 1);
 		}
 		$dataForDB = $this->mapFieldsToDatabase($object);
-		if ($forceInsert or empty($existingIndex)) {
+		if (empty($existingIndex) or $forceInsert) {
 			$this->testData[] = $dataForDB;
 		} else {
 			$this->testData[$existingIndex] = $dataForDB;
@@ -142,7 +151,7 @@ abstract class ExampleDataMapperType extends DataMapper {
 
 	protected function doInsertMultiple($objects) {
 		foreach ($objects as $object) {
-			$this->doSave($object, true);
+			$this->doSaveWithForceInsertOption($object, true);
 		}
 	}
 }
