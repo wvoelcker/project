@@ -2,7 +2,7 @@
 namespace WillV\Project;
 
 // TODO:WV:20180309:Test latest changes
-abstract class AutoloaderSet {
+class AutoloaderSet {
 	use Trait_AbstractTemplate;
 	protected $projectRoot, $rootNamespace, $namespaceDirectories;
 	protected $autoloaders = array();
@@ -11,7 +11,9 @@ abstract class AutoloaderSet {
 		$this->projectRoot = func_get_arg(0);
 		$this->rootNamespace = func_get_arg(1);
 		$this->namespaceDirectories = func_get_arg(2);
+	}
 
+	protected function setUp() {
 		$this->addAutoloader(function($className) {
 			$classPath = $this->getClassPath($className);
 			if (!empty($classPath) and file_exists($classPath)) {
