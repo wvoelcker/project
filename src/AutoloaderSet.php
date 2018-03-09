@@ -5,11 +5,19 @@ class AutoloaderSet {
 	use Trait_AbstractTemplate;
 	protected $projectRoot, $rootNamespace, $namespaceDirectories;
 	protected $autoloaders = array();
+	private $defaultNamespaceDirectories = array(
+		"Config",
+		"Domain",
+		"Datasets",
+		"Mappers",
+		"Helpers",
+	);
 
 	protected function preSetUp() {
-		$this->projectRoot = func_get_arg(0);
-		$this->rootNamespace = func_get_arg(1);
-		$this->namespaceDirectories = func_get_arg(2);		
+		$args = func_get_args();
+		$this->projectRoot = $args[0];
+		$this->rootNamespace = $args[1];
+		$this->namespaceDirectories = (empty($args[2])?$this->defaultNamespaceDirectories:$args[2]);		
 	}
 
 	protected function setUp() {
