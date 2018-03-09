@@ -14,7 +14,6 @@ class App {
 		date_default_timezone_set('UTC');
 
 		// Set up autoloaders
-		require_once $projectRoot."/vendor/autoload.php";
 		$autoLoaderSet = AutoloaderSet::create($projectRoot, $rootNamespace);
 		$autoLoaderSet->register();
 
