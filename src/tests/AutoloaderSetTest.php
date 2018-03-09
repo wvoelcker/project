@@ -3,25 +3,10 @@ namespace WillV\Project\Tests\AutoloaderSetTest;
 use PHPUnit\Framework\TestCase;
 use WillV\Project\AutoloaderSet;
 
-class TestAutoLoaderSet extends AutoloaderSet {
-	private $autoloaded = array();
-
-	protected function setUp() {
-		$that = $this;
-		$this->addAutoloader(function($className) use ($that) {
-			$that->autoloaded[] = $className;
-		});
-	}
-
-	public function isAutoloaded($className) {
-		return in_array($className, $this->autoloaded);
-	}
-}
-
 class AutoloaderSetTest extends TestCase {
 
 	private function createAutoloaderSetAndCreateTestClass($doRegister) {
-		$autoLoaderSet = TestAutoLoaderSet::create("/dev/null");
+		$autoLoaderSet = AutoloaderSet::create("/dev/null", "UnitTests", array());
 		if ($doRegister) {
 			$autoLoaderSet->register();			
 		}
