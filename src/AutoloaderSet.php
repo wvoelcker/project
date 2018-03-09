@@ -10,7 +10,7 @@ class AutoloaderSet {
 	protected function preSetUp() {
 		$this->projectRoot = func_get_arg(0);
 		$this->rootNamespace = func_get_arg(1);
-		$this->namespaceDirectories = func_get_arg(2);
+		$this->namespaceDirectories = func_get_arg(2);		
 	}
 
 	protected function setUp() {
@@ -22,7 +22,8 @@ class AutoloaderSet {
 		});
 	}
 
-	private function getClassPath($className, $mappings = array()) {
+	private function getClassPath($className) {
+
 		$classDetails = explode("\\", $className);
 		$numClassDetails = count($classDetails);
 
@@ -30,11 +31,11 @@ class AutoloaderSet {
 			return null;
 		}
 
-		if (!isset($this->namespaceDirectories[$classDetails[1]])) {
+		if (!in_array($classDetails[1], $this->namespaceDirectories)) {
 			throw new \Exception("Unknown subnamespace '".$classDetails[1]."'");
 		}
 
-		return $this->projectRoot."/".strtolower($this->namespaceDirectories[$classDetails[1]])."/".$classDetails[2].".php";
+		return $this->projectRoot."/".strtolower($classDetails[1])."/".$classDetails[2].".php";
 	}
 
 

@@ -2,6 +2,7 @@
 namespace WillV\Project\Tests\AutoloaderSetTest;
 use PHPUnit\Framework\TestCase;
 use WillV\Project\AutoloaderSet;
+use UnitTests\DummyClassesForAutoloaders\DummyClassOne;
 
 class AutoloaderSetTest extends TestCase {
 
@@ -18,6 +19,7 @@ class AutoloaderSetTest extends TestCase {
     /**
      * @expectedException Error
      * @expectedExceptionMessage SomeClass' not found
+     * @runInSeparateProcess
      */
 	public function testItShouldNotAutoloadClassesBeforeBeingRegistered() {
 		$isAutoloaded = $this->createAutoloaderSetAndCreateTestClass(false);
@@ -27,9 +29,20 @@ class AutoloaderSetTest extends TestCase {
     /**
      * @expectedException Error
      * @expectedExceptionMessage SomeClass' not found
+     * @runInSeparateProcess
      */
 	public function testItShouldAutoloadClassesAfterBeingRegistered() {
 		$isAutoloaded = $this->createAutoloaderSetAndCreateTestClass(true);
 		$this->assertTrue($isAutoloaded);
+	}
+
+    /**
+     * @runInSeparateProcess
+     */
+	public function testItShouldSetUpADefaultAutoloaderMappingClassNamesToDirectories() {
+		$autoLoaderSet = AutoloaderSet::create(__DIR__, "UnitTests", array("DummyClassesForAutoloaders"));
+		$autoLoaderSet->register();
+		$someObject = new DummyClassOne;
+		$this->assertEquals(5, $someObject->getNumber5());
 	}
 }
