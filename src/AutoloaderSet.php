@@ -1,7 +1,6 @@
 <?php
 namespace WillV\Project;
 
-// TODO:WV:20180309:Test latest changes
 class AutoloaderSet {
 	use Trait_AbstractTemplate;
 	protected $projectRoot, $rootNamespace, $namespaceDirectories;
