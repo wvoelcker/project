@@ -14,6 +14,6 @@ class PostRequest {
 				return $incomingData;
 			}
 		}
-		return null;
+		return $postData;
 	}
 }

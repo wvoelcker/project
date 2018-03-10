@@ -5,29 +5,29 @@ use WillV\Project\PostRequest;
 
 class TestPostRequest extends TestCase {
 
-	public function testItShouldReturnNullWhenGeneratingDataFromIncomingJSONForGETRequests() {
+	public function testItShouldReturnTheInputArrayWhenGeneratingDataFromIncomingJSONForGETRequests() {
 		$output = PostRequest::dataFromJSON("GET", array(), "application/json", "{'a':'b'}");
-		$this->assertNull($output);
+		$this->assertEquals(array(), $output);
 	}
 
-	public function testItShouldReturnNullWhenGeneratingDataFromIncomingJSONIfThereIsSomethingInThePOSTArray() {
+	public function testItShouldReturnTheInputArrayWhenGeneratingDataFromIncomingJSONIfThereIsSomethingInThePOSTArray() {
 		$output = PostRequest::dataFromJSON("POST", array("c" => "d"), "application/json", "{'a':'b'}");
-		$this->assertNull($output);
+		$this->assertEquals(array("c" => "d"), $output);
 	}
 
-	public function testItShouldReturnNullWhenGeneratingDataFromIncomingJSONIfTheIncomingContentTypeIsNotApplicationJSON() {
+	public function testItShouldReturnTheInputArrayWhenGeneratingDataFromIncomingJSONIfTheIncomingContentTypeIsNotApplicationJSON() {
 		$output = PostRequest::dataFromJSON("POST", array(), "text/plain", "{'a':'b'}");
-		$this->assertNull($output);
+		$this->assertEquals(array(), $output);
 	}
 
-	public function testItShouldReturnNullWhenGeneratingDataFromIncomingJSONIfTheIncomingContentBodyIsNotValidJSON() {
+	public function testItShouldReturnTheInputArrayWhenGeneratingDataFromIncomingJSONIfTheIncomingContentBodyIsNotValidJSON() {
 		$output = PostRequest::dataFromJSON("POST", array(), "application/json", "invalid-json");
-		$this->assertNull($output);	
+		$this->assertEquals(array(), $output);
 	}
 
-	public function testItShouldReturnNullWhenGeneratingDataFromIncomingJSONIfTheIncomingContentBodyIsValidJSONButDoesNotEvaluateToAnAppropriateObjectOrArray() {
+	public function testItShouldReturnTheInputArrayWhenGeneratingDataFromIncomingJSONIfTheIncomingContentBodyIsValidJSONButDoesNotEvaluateToAnAppropriateObjectOrArray() {
 		$output = PostRequest::dataFromJSON("POST", array(), "application/json", "'somestring'");
-		$this->assertNull($output);		
+		$this->assertEquals(array(), $output);
 	}
 
 	public function testItShouldParseAValidIncomingJSONRequestAndConvertItToAnArray() {
