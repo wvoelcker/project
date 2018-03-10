@@ -1,7 +1,6 @@
 <?php
 namespace WillV\Project;
 
-// TODO:WV:20170213:This has been refactored and needs to be unit tested
 abstract class Dataset {
 	use Trait_AbstractTemplate;
 	protected $fields;
