@@ -3,7 +3,10 @@ namespace WillV\Project;
 
 class PostRequest {
 
-	static public function dataFromJSON($postData, $incomingRequestBody = null) {
+	static public function dataFromJSON($postData = null, $incomingRequestBody = null) {
+		if ($postData === null) {
+			$postData = $_POST;
+		}
 		if ($incomingRequestBody === null) {
 			$incomingRequestBody = file_get_contents('php://input');
 		}
