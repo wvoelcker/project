@@ -18,11 +18,11 @@ class App {
 		$autoLoaderSet->register();
 
 		// Find active environment
-		$activeEnvironment = EnvironmentList::create()->findActiveEnvironment();
+		$environmentList = EnvironmentList::create();
+		$activeEnvironment = EnvironmentList::create()->getActiveEnvironment();
 		if (empty($activeEnvironment)) {
 			throw new \Exception("No active environment found");
 		}
-		$app->activeEnvironment = $activeEnvironment;
 
 		// Set up views
 		View::setDefaultProjectRoot($projectRoot);
