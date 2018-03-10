@@ -4,7 +4,7 @@ use WillV\Project\View;
 use WillV\Project\AutoloaderSet;
 use ProjectExampleApp\Config\EnvironmentList;
 
-// TODO:WV:20180309:Test this
+// TODO:WV:20180309:Unit test this
 class App {
 	public $projectRoot, $activeEnvironment;
 
