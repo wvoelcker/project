@@ -32,7 +32,7 @@ The 'new' keyword is disabled for all classes in this framework; instead, there 
 Many of the classes in 'project' are abstract classes, meaning that you can't instantiate them directly.  Instead you should extend the class with a version relevant for your app, and use that instead.  For example, if you are writing a blog app you might have Domain Objects (see below) called User, Post, and Comment.  These classes should all extend the base DomainObject class.
 
 ### setUp methods
-Many of the abstract classes in 'project' have setUp methods, which is where you should do your configuring (e.g. defining fields in a dataset).  See the [example app]() for more details.
+Many of the abstract classes in 'project' have setUp methods, which is where you should do your configuring (e.g. defining fields in a dataset).  See the [example app](https://github.com/wvoelcker/project-example-app) for more details.
 
 ### core concepts
 
