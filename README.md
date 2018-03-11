@@ -57,9 +57,9 @@ To make a new type of dataset, extend the class \WillV\Project\Dataset; you can 
 	* Instantiate this dataset and call its isValid method to check if a set of data is valid
 	* Associate the class with a domain object, and it will be used to validate data submitted when creating or changing the domain object
 
-#### data-mappers
+#### data mappers
 Datamappers are used to save domain objects.
 
-At present, there is only one type of datamapper; MySQLMapper; although more may be added (next on the list of a MongoMapper).
+At present, there is only one type of datamapper; MySQLMapper; although more may be added (next on the list is a MongoMapper).
 
 The DataMappers assume that the database schema has fields for "id", "created_utc" (date created), and "updated_utc" (date updated) so you should make sure that your database schema contains those fields, or there will be an error.
