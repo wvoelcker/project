@@ -37,7 +37,7 @@ Many of the abstract classes in 'project' have setUp methods, which is where you
 ### core concepts
 
 #### domain objects
-Domain objects represent entities used by your app (for example, blog posts, or users).  Each domain object is associated with a type of Dataset, meaning that that data submitted for its various properties has a set of validation rules; if you break them, an exceptio will be thrown.
+Domain objects represent entities used by your app (for example, blog posts, or users).  Each domain object is associated with a type of Dataset, meaning that that data submitted for its various properties has a set of validation rules; if you break them, an exception will be thrown.
 
 For example, if you have a domain object called User, you might associate it with a dataset called UserDataset, which contained the fields "name" and "age"
 
@@ -63,3 +63,19 @@ Datamappers are used to save domain objects.
 At present, there is only one type of datamapper; MySQLMapper; although more may be added (next on the list is a MongoMapper).
 
 The DataMappers assume that the database schema has fields for "id", "created_utc" (date created), and "updated_utc" (date updated) so you should make sure that your database schema contains those fields, or there will be an error.
+
+#### controllers
+Controllers are simple PHP scripts, which should be placed in a directory called 'controllers'.  While being simple scripts, they are included from a context in which they have access to various pieces of information, for example URL parameters, which are available from the array '$this->urlParams'.
+They should directly 'echo' their output, and are then free to 'exit'.
+
+#### routing
+Routing should be done by extending the Router class.  In the Router's setUp method, you can define routes for most common HTTP methods; parameters should be included in {braces}, and will be available in controllers in the numerically-indexed array $this->urlParams.  When you add a route, there are three parameters; the pattern, the controller-name, and the response type; the latter defaults to text/html.  See the [example app](https://github.com/wvoelcker/project-example-app) for more information.
+
+#### 404 and 500 errors
+If you create controllers called 404.php and 500.php these will be used automatically to handle the cases, respectively, of no-such-route and uncaught exceptions.
+
+#### environments
+Environment objects in 'project' store key-value pairs, and a function for determining whether or not the environment is active.  They to controllers in the $this->activeEnvironment property.  Some of the properties can be stored in JSON config files, which have the advantage of being listable in .gitignore so that they will not end up in version control; these are good for, e.g. access credentials for databases and third-party APIs.
+
+##### environment lists
+You should use an EnvironmentList to store a list of available environments.  The getActiveEnvironment method will find the activeEnvironment by calling the appropriate method of each environment in turn, until the active environment is found.
