@@ -57,6 +57,15 @@ To make a new type of dataset, extend the class \WillV\Project\Dataset; you can 
 	* Instantiate this dataset and call its isValid method to check if a set of data is valid
 	* Associate the class with a domain object, and it will be used to validate data submitted when creating or changing the domain object
 
+To associate a dataset with a domain object, configure it in the relevant domain object's setUp method, like this:
+	
+	class Task extends DomainObject {
+		protected function setUp() {
+			$this->dataSetName = "\ProjectExampleApp\Datasets\TaskDataset";
+		}
+	}
+	
+
 #### data mappers
 Datamappers are used to save domain objects.
 
