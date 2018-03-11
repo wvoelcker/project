@@ -64,12 +64,12 @@ To associate a dataset with a domain object, configure it in the relevant domain
 			$this->dataSetName = "\ProjectExampleApp\Datasets\TaskDataset";
 		}
 	}
-	
+
 
 #### data mappers
 Datamappers are used to save domain objects.
 
-At present, there is only one type of datamapper; MySQLMapper; although more may be added (next on the list is a MongoMapper).
+At present, there is only one type of datamapper; MySQLMapper, which saves objects to MySQL databases; although more may be added (next on the list is a MongoMapper, which should be a drop-in replacement that saves them to MongoDB instead).
 
 The DataMappers assume that the database schema has fields for "id", "created_utc" (date created), and "updated_utc" (date updated) so you should make sure that your database schema contains those fields, or there will be an error.
 
