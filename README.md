@@ -75,7 +75,11 @@ Routing should be done by extending the Router class.  In the Router's setUp met
 If you create controllers called 404.php and 500.php these will be used automatically to handle the cases, respectively, of no-such-route and uncaught exceptions.
 
 #### environments
-Environment objects in 'project' store key-value pairs, and a function for determining whether or not the environment is active.  They to controllers in the $this->activeEnvironment property.  Some of the properties can be stored in JSON config files, which have the advantage of being listable in .gitignore so that they will not end up in version control; these are good for, e.g. access credentials for databases and third-party APIs.
+Environment objects in 'project' store key-value pairs, and a function for determining whether or not the environment is active.
+
+Your app should extend the \WillV\Project\Environment class, configuring your environment with a list of required fields that each environment must provide.  You can then instantiate your environments and add them to your environment list (see below).
+
+When instantiating environments, you should provide a list of key/value pairs, and a function to determine if the new environment is active or not.  Some of the key/value pairs can be stored in JSON config files, which have the advantage that you can list them in .gitignore so that they will not end up in version control; these are good for storing, for example, access credentials for databases and third-party APIs.
 
 ##### environment lists
 You should use an EnvironmentList to store a list of available environments.  The getActiveEnvironment method will find the activeEnvironment by calling the appropriate method of each environment in turn, until the active environment is found.
