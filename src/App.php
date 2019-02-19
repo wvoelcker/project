@@ -2,13 +2,12 @@
 namespace WillV\Project;
 use WillV\Project\View;
 use WillV\Project\AutoloaderSet;
-use ProjectExampleApp\Config\EnvironmentList;
 
 // TODO:WV:20180309:Unit test this
 class App {
 	public $projectRoot, $activeEnvironment;
 
-	static public function bootstrap($projectRoot, $rootNamespace) {
+	static public function bootstrap($projectRoot, $rootNamespace, $environmentList) {
 
 		// Set up timezone
 		date_default_timezone_set('UTC');
@@ -18,8 +17,7 @@ class App {
 		$autoLoaderSet->register();
 
 		// Find active environment
-		$environmentList = EnvironmentList::create();
-		$activeEnvironment = EnvironmentList::create()->getActiveEnvironment();
+		$activeEnvironment = $environmentList->getActiveEnvironment();
 		if (empty($activeEnvironment)) {
 			throw new \Exception("No active environment found");
 		}
