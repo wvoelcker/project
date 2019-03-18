@@ -18,7 +18,7 @@ class App {
 
 		// Find active environment
 		$environmentListClass = $rootNamespace."\Config\EnvironmentList";
-		$environmentListClass::create();
+		$environmentList = $environmentListClass::create();
 		$activeEnvironment = $environmentList->getActiveEnvironment();
 		if (empty($activeEnvironment)) {
 			throw new \Exception("No active environment found");
