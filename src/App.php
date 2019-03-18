@@ -7,7 +7,7 @@ use WillV\Project\AutoloaderSet;
 class App {
 	public $projectRoot, $activeEnvironment;
 
-	static public function bootstrap($projectRoot, $rootNamespace, $environmentList) {
+	static public function bootstrap($projectRoot, $rootNamespace) {
 
 		// Set up timezone
 		date_default_timezone_set('UTC');
@@ -17,6 +17,8 @@ class App {
 		$autoLoaderSet->register();
 
 		// Find active environment
+		$environmentListClass = $rootNamespace."\Config\EnvironmentList";
+		$environmentListClass::create();
 		$activeEnvironment = $environmentList->getActiveEnvironment();
 		if (empty($activeEnvironment)) {
 			throw new \Exception("No active environment found");
